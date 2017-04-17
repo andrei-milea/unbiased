@@ -1,3 +1,4 @@
 web scrapping tools
 https://github.com/fhamborg/news-please
 https://github.com/codelucas/newspaper
+https://code.google.com/archive/p/boilerpipe/
