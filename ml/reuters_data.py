@@ -2,10 +2,15 @@ import os
 from article import Article
 from bs4 import BeautifulSoup
 import logging
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer
+import collections, re
 
 class ReutersData:
     """manipulation and extraction for reuters data"""
-    _articles = []
+    articles_ = []
+    train_articles_text_ = []
+    test_articles_text_ = []
 
     def __init__(self, path):
         if os.path.isdir(path):
@@ -43,17 +48,27 @@ class ReutersData:
                         if article_xml.TOPICS != None:
                             topics = [child.string for child in article_xml.TOPICS.children]
                         article = Article(author, title, date, text, places, people, orgs, topics)
-                        self._articles.append(article)
-        #logging.warning(len(self._articles))
+                        self.articles_.append(article)
+                        if topics:
+                            self.train_articles_text_.append(text)
+                            print(''.join(topics) + "\n")
+                        else:
+                            self.test_articles_text_.append(text)
+        #logging.warning(len(self.articles_))
 
-    #def train(self):
-        #for article in self._articles:
+    def train(self):
+        eng_stop_words = set(stopwords.words("english"))
+        vectorizer = CountVectorizer(analyzer = "word", tokenizer = None, preprocessor = None, stop_words = eng_stop_words, max_features = 5000)
+        train_data_features = vectorizer.fit_transform(self.train_articles_text_)
+        #logging.warning(vectorizer.get_feature_names())
+        train_data_features = train_data_features.toarray()
+        print(train_data_features.shape)
 
             
 
 def main():
     reuters_data = ReutersData("../data/reuters")
-    #reuters_data.train()
+    reuters_data.train()
 
 if __name__ == "__main__":
     main()
