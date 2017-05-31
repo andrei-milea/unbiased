@@ -2,6 +2,21 @@
 <html lang="en">
 <head>
     <title>{% block title %}{% endblock %}</title>
+	<script type="text/javascript">
+	function SelectSource(val)
+	{
+		if(val=='new_story')
+		{
+			var element=document.getElementById('input_story');
+			element.style.display='none';
+		}
+		else
+		{
+			var element=document.getElementById('input_story');
+			element.style.display='block';
+		}
+	}
+	</script>
 </head>
 <body>
 	<div align="right"> <a>Sign Up </a></div>

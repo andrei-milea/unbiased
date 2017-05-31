@@ -19,5 +19,6 @@ from . import views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^add_link/', views.add_link, name='add_link')
+    url(r'^contribute/', views.contribute_page, name='contribute_page'),
+    url('^contribute/\?slink=.*', views.add_link, name='add_link')
 ]
