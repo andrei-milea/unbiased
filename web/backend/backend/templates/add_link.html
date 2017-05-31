@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Add new link{% endblock %}
+
+{% block content %}
+<p>Link: </p>
+<p>Link type:
+	<ul>
+	{% for link_type in link_type_list %}
+		<li>{{ link_type }}</li>
+	{% endfor %}
+	</ul>.
+</p>
+{% endblock %}
