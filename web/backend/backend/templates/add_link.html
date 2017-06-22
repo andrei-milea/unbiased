@@ -1,10 +1,26 @@
 {% extends "base.html" %}
 
 {% block title %}Add new link{% endblock %}
+<script type="text/javascript">
+function SelectSource(val)
+{
+var element=document.getElementById('color');
+if(val=='Article')
+	element.style.display='block';
+else
+	element.style.display='none';
+}
+
+</script>
 
 {% block content %}
 <p>Link: </p>
 <p>Link type:
+	<select name='select_src' onchange='SelectSource(this.value);'>
+  		<option value="Article">News Article</option>
+  		<option value="Video">Video</option>
+  		<option value="Blog">Blog Post</option>
+	</select>
 	<ul>
 	{% for link_type in link_type_list %}
 		<li>{{ link_type }}</li>
