@@ -12,7 +12,7 @@ def add_link(request):
     validator = URLValidator(verify_exists=True)
     try:
         validator(request)
-    except ValidationError, err:
-        print err
+    except ValidationError as err:
+        print(err)
     #TODO urlparse, send to c++ code, return success/error page to user
     return HttpResponse()
