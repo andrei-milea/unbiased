@@ -8,11 +8,13 @@ class User(AbstractBaseUser):
     def __unicode__(self):
         return self.name
 
-class Link(models.Model):
+class UserEntry(models.Model):
     user = models.ManyToManyField(User)
-    url = models.URLField(unique=True)
+    url = models.URLField(unique=True, blank=True)
+    text = models.TextField(blank=True)
+    keywords = models.CharField(max_length=200, blank=True)
 
 class Story(models.Model):
     title = models.CharField(max_length=200)
-    links = models.ManyToManyField(Link)
+    entry = models.ManyToManyField(UserEntry)
     publication_date = models.DateField()
