@@ -1,0 +1,10 @@
+<config>
+    <posqresql_db>read_pair.data</read_mapping_path>
+    <posqresql_db>
+		<host>localhost</host>
+		<port></port>
+		<username>thorium</username>
+		<password>ChangeIt!@34</password>
+    	<dbname>unbiased</dbname>
+    </posqresql_db>
+</config>
