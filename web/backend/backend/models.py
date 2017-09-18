@@ -12,7 +12,7 @@ class UserEntry(models.Model):
     url = models.URLField(unique=True, blank=True)
     text = models.TextField(blank=True)
     keywords = models.CharField(max_length=200, blank=True)
-    processed = model.BooleanField(initial = False)
+    processed = models.BooleanField(default=False)
 
 class Story(models.Model):
     title = models.CharField(max_length=200)

@@ -5,7 +5,7 @@ GCC = g++
 EXE = ../bin/
 
 main: main.o
-	$(GCC) $(LFLAGS) main.o -o $(EXE)main
+	$(GCC) $(LFLAGS) main.o -o $(EXE)engine_main
 
 main.o: main.cpp config.h db.h
 	$(GCC) $(CFLAGS) main.cpp -o main.o

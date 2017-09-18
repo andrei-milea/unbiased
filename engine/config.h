@@ -19,7 +19,7 @@ public:
 
     static const Config& get()
     {
-        static Config cfg("params.xml");
+        static Config cfg("config.xml");
         return cfg;
     }
 
@@ -31,11 +31,11 @@ private:
         {
             ptree pt;
             read_xml(cfg_file, pt);
-            host = pt.get<std::string>("config.posqresql_db.host");
-            port = pt.get<std::string>("config.posqresql_db.port");
-            dbname = pt.get<std::string>("config.posqresql_db.dbname");
-            username = pt.get<std::string>("config.posqresql_db.username");
-            password = pt.get<std::string>("config.posqresql_db.password");
+            host = pt.get<std::string>("config.postgresql_db.host");
+            port = pt.get<std::string>("config.postgresql_db.port");
+            dbname = pt.get<std::string>("config.postgresql_db.dbname");
+            username = pt.get<std::string>("config.postgresql_db.username");
+            password = pt.get<std::string>("config.postgresql_db.password");
         }
         catch(std::exception& ex)
         {
