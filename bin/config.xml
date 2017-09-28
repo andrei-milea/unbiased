@@ -1,4 +1,6 @@
 <config>
+	<threads_no>4</threads_no>
+	<scrapper_buff_size>1024</scrapper_buff_size>
     <postgresql_db>
 		<host>localhost</host>
 		<port></port>

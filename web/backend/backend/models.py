@@ -1,11 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
-
-class User(AbstractBaseUser):
-    name = models.CharField(max_length=30, unique=True)
-    email = models.EmailField(unique=True)
-    def __unicode__(self):
-        return self.name
+from django.contrib.auth.models import User
 
 class UserEntry(models.Model):
     user = models.ManyToManyField(User)

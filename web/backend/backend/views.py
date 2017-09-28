@@ -5,6 +5,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
 from .models import UserEntry
 from .models import User
 import urllib.parse
@@ -13,8 +14,6 @@ import logging
 import re
 from subprocess import call
 
-#from django.contrib.auth.decorators import login_required
-#@login_required
 def home(request):
     print("home req")
     return render(request, 'home.html')
@@ -50,10 +49,7 @@ def parse_contribute_req(request):
             keywords = parts[1]
     return src_type, user_input, keywords
     
-def add_user(user_name, user_email, user_pass):
-    user = User.objects.create(name = user_name, email = user_email)
-    user.save()
-
+@login_required
 def contribute_page(request):
     html = None
     try:
@@ -67,13 +63,11 @@ def contribute_page(request):
             if uinput[0] != 'Text':
                 validator = URLValidator()
                 input_url = urllib.parse.unquote(uinput[1])
-                print(input_url)
                 validator(input_url)
-                #add_user("test", "test@yahoo.com", "test_pass")
-                curr_user = User.objects.get(name='test')
+                print(request.user)
                 user_entry = UserEntry.objects.create(url=input_url, keywords=uinput[2])
                 user_entry.save()
-                user_entry.user.add(curr_user)
+                user_entry.user.add(request.user)
             else:
                 user_entry = UserEntry.objects.create(user='test', text=uinput[1], keywords=uinput[2])
             #user_entry.save()

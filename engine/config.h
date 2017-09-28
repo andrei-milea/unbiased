@@ -11,6 +11,8 @@ using boost::property_tree::ptree;
 class Config
 {
 public:
+	size_t threads_no;
+	size_t scrapper_buff_size;
 	std::string host;
 	std::string port;
 	std::string username;
@@ -31,6 +33,8 @@ private:
         {
             ptree pt;
             read_xml(cfg_file, pt);
+            threads_no = pt.get<size_t>("config.threads_no");
+			scrapper_buff_size = pt.get<size_t>("config.scrapper_buff_size");
             host = pt.get<std::string>("config.postgresql_db.host");
             port = pt.get<std::string>("config.postgresql_db.port");
             dbname = pt.get<std::string>("config.postgresql_db.dbname");
