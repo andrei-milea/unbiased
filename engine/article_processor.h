@@ -1,7 +1,9 @@
 #ifndef _ARTICLE_PROCESSOR_H
 #define _ARTICLE_PROCESSOR_H
 
+#include "dictionary.h"
 #include "similarity.h"
+#include "article.h"
 #include <boost/asio.hpp>
 #include <boost/process.hpp>
 #include <map>
@@ -11,9 +13,10 @@ namespace bp = boost::process;
 class ArticleProcessor
 {
 public:
-	ArticleProcessor(boost::asio::io_service* ios, size_t buff_max_size)
+	ArticleProcessor(boost::asio::io_service* ios, size_t buff_max_size, const std::vector<std::string>& dict_words)
 		:asio_service_(ios),
-		buffer_max_size_(buff_max_size)
+		buffer_max_size_(buff_max_size),
+		dictionary_(dict_words)
 	{}
 
 	void scrap_and_process(const std::string& url)
@@ -37,7 +40,7 @@ private:
 	{
 		try
 		{
-			Article article(article_str);
+			Article article(article_str, dictionary_);
 		}
 		catch(std::exception& ex)
 		{
@@ -48,6 +51,7 @@ private:
 private:
 	boost::asio::io_service *asio_service_;
 	size_t buffer_max_size_;
+	Dictionary dictionary_;
 };
 
 #endif

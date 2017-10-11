@@ -21,7 +21,7 @@ public:
 
     static const Config& get()
     {
-        static Config cfg("config.xml");
+        static Config cfg{"config.xml"};
         return cfg;
     }
 

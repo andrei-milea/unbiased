@@ -7,19 +7,20 @@
 
 using namespace std;
 
+vector<string> dict_words;
 boost::asio::io_service io_service;
-ThreadPool thread_pool(&io_service, Config::get().threads_no);
-ArticleProcessor article_processor(&io_service, Config::get().scrapper_buff_size);
+ThreadPool thread_pool{&io_service, Config::get().threads_no};
+ArticleProcessor article_processor{&io_service, Config::get().scrapper_buff_size, dict_words};
 
 void signal_handler(int sig)
 {
 	cout << "handler called\n";
 	const std::string connection_params = std::string("host=") + Config::get().host + " user=" + Config::get().username +
 											" password=" + Config::get().password + " dbname=" + Config::get().dbname;
-	const std::string select_entries_str("SELECT * FROM backend_userentry WHERE processed = False");
+	const std::string select_entries_str{"SELECT * FROM backend_userentry WHERE processed = False"};
 	try
 	{
-		DbAccess db(connection_params);
+		DbAccess db{connection_params};
 		auto user_entries = db.execute(select_entries_str);
 		for(const auto& user_entry : user_entries)
 		{
