@@ -1,0 +1,16 @@
+-----Postgresql commands:
+
+passwd postgres
+sudo -u postgres psql postgres
+\l - list all databases
+DROP DATABASE "unbiased"; - clear all database
+CREATE DATABASE "unbiased";
+\connect unbiased
+\dt - list all tables
+\q
+
+
+-----Update django database
+
+python manage.py makemigrations
+python manage.py migrate
