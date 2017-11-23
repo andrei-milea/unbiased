@@ -16,11 +16,18 @@ def download_articles(srcs_filename):
     sources = sources_file.read().splitlines()
     articles_txt = []
     for source_str in sources:
-        source = newspaper.build(source_str, memoize_articles=False)
+        try:
+            source = newspaper.build(source_str, memoize_articles=False)
+        except Exception as exp:
+            print('build source exception: ' + src_article + ' error: ' + repr(exp))
         print(source_str + " " + str(len(source.articles)))
         for src_article in source.articles:
-            src_article.download()
-            src_article.parse()
-            if(len(src_article.text) > 1000):
-                articles_txt.append(src_article.text)
+            try:
+                src_article.download()
+                src_article.parse()
+                if(len(src_article.text) > 1000):
+                    articles_txt.append(src_article.text)
+                    break
+            except Exception as exp:
+                print('download/parse article exception for: ' + source_str + ' error: ' + repr(exp))
     return articles_txt

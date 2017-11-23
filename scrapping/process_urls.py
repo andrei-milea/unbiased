@@ -26,12 +26,12 @@ def xml_str(article):
 def main():
     try:
         params = sys.argv[1:]
-        assert len(params) == 1
-        article = Article(params[0])
-        article.download()
-        article.parse()
-        print(xml_str(article))
-        print(article.text)
+        for param in params:
+            article = Article(param)
+            article.download()
+            article.parse()
+            print(xml_str(article))
+            print(article.text)
     except Exception as exp:
         print('caught error: ' + repr(exp))
 
