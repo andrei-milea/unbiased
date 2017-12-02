@@ -4,6 +4,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from nltk.stem import WordNetLemmatizer
 from nltk import word_tokenize
 
+from scipy import linalg
+
 def corpus_vocab():
     eng_stop_words = set(stopwords.words("english"))
     words = corpus.words.words()
@@ -29,6 +31,6 @@ def tfidf_docs(docs):
     term_doc_mat = vectorizer.fit_transform(docs)
     return term_doc_mat.toarray().transpose(), vectorizer.get_feature_names()
 
-#def run_svd(term_doc_matrix)
-
+def run_lsa(term_doc_matrix):
+    u, sigma, vt = linalg.svd(term_doc_matrix)
 
