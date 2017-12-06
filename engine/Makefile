@@ -7,7 +7,7 @@ EXE = ../bin/
 main: main.o murmur3.o
 	$(GCC) $(LFLAGS) murmur3.o main.o -o $(EXE)engine_main
 
-main.o: main.cpp config.h db.h thread_pool.h article_processor.h types.h
+main.o: main.cpp config.h pqldb.h mongodb.h thread_pool.h article_processor.h types.h
 	$(GCC) $(CFLAGS) main.cpp -o main.o
 
 murmur3.o: murmur3.c murmur3.h

@@ -1,15 +1,15 @@
-#ifndef _DICTIONARY_H
-#define _DICTIONARY_H
+#ifndef _VOCABULARY_H
+#define _VOCABULARY_H
 
 #include "types.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
 
-class Dictionary
+class Vocabulary
 {
 public:
-	Dictionary(const std::vector<std::string>& words)
+	Vocabulary(const std::vector<std::string>& words)
 		:words_(words),
 		new_words_idx_(0)
 	{

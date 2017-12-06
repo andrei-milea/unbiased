@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "minhash.h"
-#include "dictionary.h"
+#include "vocablary.h"
 #include <array>
 #include <string>
 #include <vector>
@@ -16,7 +16,7 @@ using boost::property_tree::ptree;
 class Article
 {
 public:
-	Article(const std::string &article_str, Dictionary& dictionary)
+	Article(const std::string &article_str, Vocabulary& dictionary)
 		:dictionary_(dictionary)
     {
 		ptree pt;
@@ -79,7 +79,7 @@ private:
 	}
 
 private:
-	Dictionary& dictionary_;
+	Vocabulary& dictionary_;
 	uint64_t id_;
 	size_t length_;
 	std::string title_;

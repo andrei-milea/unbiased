@@ -1,4 +1,3 @@
-import
 from nltk_utils import tfidf
 import sys
 import nltk

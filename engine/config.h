@@ -7,17 +7,31 @@
 
 using boost::property_tree::ptree;
 
+struct PQLCredentials
+{
+	std::string host;
+	std::string port;
+	std::string username;
+	std::string password;
+	std::string dbname;
+};
+
+struct MongoCredentials
+{
+	std::string server;
+	std::string username;
+	std::string password;
+	std::string dbname;
+};
+
 /// singleton used to load the configuration file
 class Config
 {
 public:
 	size_t threads_no;
 	size_t scrapper_buff_size;
-	std::string host;
-	std::string port;
-	std::string username;
-	std::string password;
-	std::string dbname; 
+	PQLCredentials pql_credentials;
+	MongoCredentials mongo_credentials;
 
     static const Config& get()
     {
@@ -35,11 +49,17 @@ private:
             read_xml(cfg_file, pt);
             threads_no = pt.get<size_t>("config.threads_no");
 			scrapper_buff_size = pt.get<size_t>("config.scrapper_buff_size");
-            host = pt.get<std::string>("config.postgresql_db.host");
-            port = pt.get<std::string>("config.postgresql_db.port");
-            dbname = pt.get<std::string>("config.postgresql_db.dbname");
-            username = pt.get<std::string>("config.postgresql_db.username");
-            password = pt.get<std::string>("config.postgresql_db.password");
+
+            pql_credentials.host = pt.get<std::string>("config.postgresql.host");
+            pql_credentials.port = pt.get<std::string>("config.postgresql.port");
+            pql_credentials.username = pt.get<std::string>("config.postgresql.username");
+            pql_credentials.password = pt.get<std::string>("config.postgresql.password");
+            pql_credentials.dbname = pt.get<std::string>("config.postgresql.dbname");
+
+            mongo_credentials.server = pt.get<std::string>("config.mongodb.server");
+            mongo_credentials.username = pt.get<std::string>("config.mongodb.username");
+            mongo_credentials.password = pt.get<std::string>("config.mongodb.password");
+            mongo_credentials.dbname = pt.get<std::string>("config.mongodb.dbname");
         }
         catch(std::exception& ex)
         {

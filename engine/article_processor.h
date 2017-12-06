@@ -1,7 +1,7 @@
 #ifndef _ARTICLE_PROCESSOR_H
 #define _ARTICLE_PROCESSOR_H
 
-#include "dictionary.h"
+#include "vocablary.h"
 #include "similarity.h"
 #include "article.h"
 #include <boost/asio.hpp>
@@ -51,7 +51,7 @@ private:
 private:
 	boost::asio::io_service *asio_service_;
 	size_t buffer_max_size_;
-	Dictionary dictionary_;
+	Vocabulary dictionary_;
 };
 
 #endif
