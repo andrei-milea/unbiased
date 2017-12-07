@@ -1,15 +1,23 @@
 #ifndef _PQLDB_H
 #define _PQLDB_H
 
+#include "config.h"
 #include <pqxx>
 #include <string>
 
 class PqlDb
 {
 public:
-	PqlDb(const std::string& params)
-		:pqdb_connection_(params.c_str())
+	static PqlDb& get()
 	{
+		static PqlDb instance;
+		return instance;
+	}
+	
+	std::vector<std::vector<std::string>> get_unprocessed_entries()
+	{
+		const std::string select_entries_str{"SELECT * FROM backend_userentry WHERE processed = False"};
+		return execute(select_entries_str);
 	}
 
 	std::vector<std::vector<std::string>> execute(const std::string& query)
@@ -24,6 +32,23 @@ public:
 				res_str[row_idx].emplace_back(res[row_idx][col_idx].as<std::string>());
 		return res_str;
 	}
+
+private:
+	PqlDb()
+		:pqdb_connection_(get_connection_params())
+	{
+	}
+
+	std::string get_connection_params()const
+	{
+		return std::string{"host="} + Config::get().pql_credentials.host + " user=" + Config::get().pql_credentials.username +
+											" password=" + Config::get().pql_credentials.password + " dbname=" + Config::get().pql_credentials.dbname;
+	}
+
+	PqlDb(const PqlDb&) = delete;
+	PqlDb(PqlDb&&) = delete;
+	PqlDb& operator=(const PqlDb&) = delete;
+	PqlDb& operator=(PqlDb &&) = delete;
 
 private:
 	pqxx::connection pqdb_connection_;

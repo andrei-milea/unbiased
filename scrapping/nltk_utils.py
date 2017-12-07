@@ -11,8 +11,8 @@ def corpus_vocab():
     eng_stop_words = set(stopwords.words("english"))
     words = corpus.words.words()
     lematizer = WordNetLemmatizer()
-    words =  [lematizer.lemmatize(word) for word in words if word not in eng_stop_words and len(word) >= 3]
-    return set(words)
+    words =  [lematizer.lemmatize(word) for word in words if word not in eng_stop_words]
+    return words
 
 def lemma_tokenize(text):
     eng_stop_words = set(stopwords.words())
@@ -23,7 +23,7 @@ def get_vocabulary(text):
     vectorizer = CountVectorizer(analyzer = "word", token_pattern=r'\w{4,}', tokenizer = lemma_tokenize, preprocessor = None, max_features = 1000000)
     vocabulary_dict, X = vectorizer._count_vocab(text, fixed_vocab = False)
     vocabulary = [key for key, val in vocabulary_dict.items()]
-    return vocabulary
+    return set(vocabulary)
 
 #tfidf = tf * idf, where idf = log(total no of docs / doc containing term)
 def tfidf(text, dbvocabulary):

@@ -1,31 +1,22 @@
-#include "config.h"
 #include "pqldb.h"
-#include "thread_pool.h"
-#include "article_processor.h"
 #include <csignal>
 #include <exception>
 
 using namespace std;
-
-vector<string> dict_words;
-boost::asio::io_service io_service;
-ThreadPool thread_pool{&io_service, Config::get().threads_no};
-ArticleProcessor article_processor{&io_service, Config::get().scrapper_buff_size, dict_words};
+Engine g_engine;
 
 void signal_handler(int sig)
 {
 	cout << "handler called\n";
-	const std::string connection_params = std::string{"host="} + Config::get().pql_credentials.host + " user=" + Config::get().pql_credentials.username +
-											" password=" + Config::get().pql_credentials.password + " dbname=" + Config::get().pql_credentials.dbname;
 	const std::string select_entries_str{"SELECT * FROM backend_userentry WHERE processed = False"};
 	try
 	{
 		PqlDb db{connection_params};
-		auto user_entries = db.execute(select_entries_str);
+		auto user_entries = PqlDb::get().get_unprocessed_entries();
 		for(const auto& user_entry : user_entries)
 		{
 			assert(user_entry.size() == 5);
-			article_processor.scrap_and_process(user_entry[1]);
+			g_engine.get_processor().scrap_and_process(user_entry[1]);
 		}
 		//thread_pool.post();
 		

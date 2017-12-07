@@ -51,19 +51,27 @@ class MongoUtils:
             del article
             gc.collect()
 
-    def save_vocabulary(self, srcs_filename):
+    def save_corpus_vocabulary(self):
         collection = self.db['vocabulary']
-        vocab_words_set = corpus_vocab()
-        new_words = scrap_vocabulary(srcs_filename)
-        vocab_words_set.union(new_words)
-        vocab_words = sorted(vocab_words_set)
-        print('vocabulary size: ' + str(len(vocab_words)))
+        vocab_words = corpus_vocab()
         vocabulary = {
-            "timestamp": timestamp,
             "english": "1",
             "words": vocab_words
         }
         collection.insert_one(vocabulary)
+
+    def update_vocabulary(self, srcs_filename):
+        collection = self.db['vocabulary']
+        vocabulary_doc = collection.find_one({"english": "1"})
+        if None == vocabulary_doc:
+            raise Exception('no vocabulary found in database')
+        vocab_set = set(vocabulary_doc["words"])
+        new_words = scrap_vocabulary(srcs_filename)
+        vocab_set.union(new_words)
+        vocab_lst = sorted(vocab_set)
+        print('vocabulary size: ' + str(len(vocab_words)))
+        vocabulary_doc["words"] = vocab_lst
+        collection.save(vocabulary_doc)
 
     def save_article_meta(self, url, title, authors, tfidf_vec, timestamp):
         collection = self.db['articles_meta']
@@ -100,13 +108,13 @@ class MongoUtils:
     
 def init_db():
     unbiased_shard = "@unbiased-shard-00-00-5jeo1.mongodb.net:27017,unbiased-shard-00-01-5jeo1.mongodb.net:27017,unbiased-shard-00-02-5jeo1.mongodb.net:27017/test?ssl=true&replicaSet=unbiased-shard-0&authSource=admin"
-    mongo_utils = MongoUtils(username = "", password = "", shard = unbiased_shard)
+    mongo_utils = MongoUtils(username = "rashomon", password = "ChangeIt!@34", shard = unbiased_shard)
     return mongo_utils
 
 def main():
     try:
         unbiased_shard = "@unbiased-shard-00-00-5jeo1.mongodb.net:27017,unbiased-shard-00-01-5jeo1.mongodb.net:27017,unbiased-shard-00-02-5jeo1.mongodb.net:27017/test?ssl=true&replicaSet=unbiased-shard-0&authSource=admin"
-        mongo_utils = MongoUtils(username = "", password = "", shard = unbiased_shard)
+        mongo_utils = MongoUtils(username = "rashomon", password = "ChangeIt!@34", shard = unbiased_shard)
         mongo_utils.save_vocabulary('news_sites.txt')
     except Exception as exp:
         print('mongoutils caught error: ' + repr(exp))

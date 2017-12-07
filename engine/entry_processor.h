@@ -1,23 +1,26 @@
-#ifndef _ARTICLE_PROCESSOR_H
-#define _ARTICLE_PROCESSOR_H
+#ifndef _ENTRY_PROCESSOR_H
+#define _ENTRY_PROCESSOR_H
 
-#include "vocablary.h"
-#include "similarity.h"
+#include "mongodb.h"
+#include "vocabulary.h"
 #include "article.h"
+#include "article_builder.h"
 #include <boost/asio.hpp>
 #include <boost/process.hpp>
 #include <map>
 
 namespace bp = boost::process;
 
-class ArticleProcessor
+class EntryProcessor
 {
 public:
-	ArticleProcessor(boost::asio::io_service* ios, size_t buff_max_size, const std::vector<std::string>& dict_words)
+	EntryProcessor(boost::asio::io_service* ios, size_t buff_max_size)
 		:asio_service_(ios),
 		buffer_max_size_(buff_max_size),
-		dictionary_(dict_words)
-	{}
+		vocabulary_(MongoDb::get().load_vocabulary()),
+		article_builder_(vocabulary_)
+	{
+	}
 
 	void scrap_and_process(const std::string& url)
 	{
@@ -28,7 +31,7 @@ public:
 		auto get_res = [this, &buffer_str](const boost::system::error_code &ec, std::size_t size)
 					{
 						if(!ec)
-							process_article(buffer_str);
+							process_entry(buffer_str);
 						else
 							std::cout << ec.message() << std::endl;
 					};
@@ -36,11 +39,11 @@ public:
 	}
 
 private:
-	void process_article(const std::string& article_str)
+	void process_entry(const std::string& entry_str)
 	{
 		try
 		{
-			Article article(article_str, dictionary_);
+			auto article = article_builder_.build_article(entry_str);
 		}
 		catch(std::exception& ex)
 		{
@@ -51,7 +54,8 @@ private:
 private:
 	boost::asio::io_service *asio_service_;
 	size_t buffer_max_size_;
-	Vocabulary dictionary_;
+	Vocabulary vocabulary_;
+	ArticleBuilder article_builder_;
 };
 
 #endif
