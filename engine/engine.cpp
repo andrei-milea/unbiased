@@ -1,3 +1,4 @@
+#include "engine.h"
 #include "pqldb.h"
 #include <csignal>
 #include <exception>
@@ -11,7 +12,6 @@ void signal_handler(int sig)
 	const std::string select_entries_str{"SELECT * FROM backend_userentry WHERE processed = False"};
 	try
 	{
-		PqlDb db{connection_params};
 		auto user_entries = PqlDb::get().get_unprocessed_entries();
 		for(const auto& user_entry : user_entries)
 		{

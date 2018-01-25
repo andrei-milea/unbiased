@@ -12,7 +12,7 @@ def corpus_vocab():
     words = corpus.words.words()
     lematizer = WordNetLemmatizer()
     words =  [lematizer.lemmatize(word) for word in words if word not in eng_stop_words]
-    return words
+    return words, eng_stop_words
 
 def lemma_tokenize(text):
     eng_stop_words = set(stopwords.words())

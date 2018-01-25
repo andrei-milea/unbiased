@@ -8,10 +8,16 @@ import urllib
 import numpy
 import gc
 import datetime
+import xml.etree.ElementTree
+
+def get_credentials(config_filename):
+    xml_root = xml.etree.ElementTree.parse(config_filename).getroot()
+    mongo_elem = xml_root.find('mongodb')
+    return mongo_elem[0], mongo_elem[1], mongo_elem[2]
 
 class MongoUtils:
-    def __init__(self, username, password, shard):
-        self.client = pymongo.MongoClient("mongodb://" + username + ":" + urllib.parse.quote(password) + shard)
+    def __init__(self, username, password, server):
+        self.client = pymongo.MongoClient("mongodb://" + username + ":" + urllib.parse.quote(password) + "@" + server)
         self.db = self.client['unbiased']
 
     def load_vocabulary(self):
@@ -53,25 +59,18 @@ class MongoUtils:
 
     def save_corpus_vocabulary(self):
         collection = self.db['vocabulary']
-        vocab_words = corpus_vocab()
+        vocab_words, stop_words = corpus_vocab()
+        words_data = []
+        count = 0
+        for vocab_word in vocab_words:
+            words_data.append({"word" : vocab_word, "id" : count, "frequency" : 0})
+            count += 1
         vocabulary = {
-            "english": "1",
-            "words": vocab_words
+            "language": "english",
+            "words" : words_data,
+            "stop_words": vocab_words
         }
         collection.insert_one(vocabulary)
-
-    def update_vocabulary(self, srcs_filename):
-        collection = self.db['vocabulary']
-        vocabulary_doc = collection.find_one({"english": "1"})
-        if None == vocabulary_doc:
-            raise Exception('no vocabulary found in database')
-        vocab_set = set(vocabulary_doc["words"])
-        new_words = scrap_vocabulary(srcs_filename)
-        vocab_set.union(new_words)
-        vocab_lst = sorted(vocab_set)
-        print('vocabulary size: ' + str(len(vocab_words)))
-        vocabulary_doc["words"] = vocab_lst
-        collection.save(vocabulary_doc)
 
     def save_article_meta(self, url, title, authors, tfidf_vec, timestamp):
         collection = self.db['articles_meta']
@@ -108,13 +107,13 @@ class MongoUtils:
     
 def init_db():
     unbiased_shard = "@unbiased-shard-00-00-5jeo1.mongodb.net:27017,unbiased-shard-00-01-5jeo1.mongodb.net:27017,unbiased-shard-00-02-5jeo1.mongodb.net:27017/test?ssl=true&replicaSet=unbiased-shard-0&authSource=admin"
-    mongo_utils = MongoUtils(username = "rashomon", password = "ChangeIt!@34", shard = unbiased_shard)
+    serv, user, passw = get_credentials("../bin/config.xml")
+    mongo_utils = MongoUtils(username = user, password = passw, server = serv)
     return mongo_utils
 
 def main():
     try:
-        unbiased_shard = "@unbiased-shard-00-00-5jeo1.mongodb.net:27017,unbiased-shard-00-01-5jeo1.mongodb.net:27017,unbiased-shard-00-02-5jeo1.mongodb.net:27017/test?ssl=true&replicaSet=unbiased-shard-0&authSource=admin"
-        mongo_utils = MongoUtils(username = "rashomon", password = "ChangeIt!@34", shard = unbiased_shard)
+        mongo_utils = init_db()
         mongo_utils.save_vocabulary('news_sites.txt')
     except Exception as exp:
         print('mongoutils caught error: ' + repr(exp))

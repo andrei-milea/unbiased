@@ -9,11 +9,10 @@ class Engine
 {
 public:
 	Engine()
-		:thread_pool_(&io_service, Config::get().threads_no),
-		entry_processor_(&io_service, Config::get().scrapper_buff_size)
+		:entry_processor_(&io_service_, Config::get().scrapper_buff_size)
 	{}
 
-	const get_processor()const
+	const EntryProcessor& get_processor()const
 	{
 		return entry_processor_;
 	}

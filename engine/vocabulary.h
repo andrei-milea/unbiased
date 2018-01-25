@@ -1,24 +1,32 @@
 #ifndef _VOCABULARY_H
 #define _VOCABULARY_H
 
-#include "types.h"
+#include <iostream>
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <unordered_set>
+#include <map>
+#include <atomic>
+
+
+typedef uint32_t WordInt;
+struct WordInfo
+{
+	WordInt word_id;
+	uint64_t freq;
+};
 
 class Vocabulary
 {
 public:
-	Vocabulary(const std::vector<std::string>& words)
-		:words_(words),
+	Vocabulary(const std::map<std::string, WordInfo>& words_map, const std::unordered_set<std::string>& stop_words)
+		:words_map_(words_map),
+		stop_words_(stop_words),
 		new_words_idx_(0)
 	{
-		std::sort(words_.begin(), words_.end());
-		for(size_t idx = 0; idx < words_.size(); idx++)
-			words_ids_[words_[idx]] = (WordInt)idx;
 	}
 
-	void add_word(const std::string& word)
+	void add_new_word(const std::string& word)
 	{
 		if(new_words_idx_ < MAX_NEW_WORDS)
 		{
@@ -29,37 +37,45 @@ public:
 			std::cout << "too many new words added\n";
 	}
 
+	void increase_word_freq(const std::string& word)
+	{
+		words_map_.at(word).freq++;
+	}
+
+	uint64_t get_word_freq(const std::string& word)const
+	{
+		return words_map_.at(word).freq;
+	}
+
 	bool get_word_id(const std::string& word, WordInt &id)const
 	{
-		auto it = words_ids_.find(word);
-		if(it == words_ids_.end())
+		auto it = words_map_.find(word);
+		if(it == words_map_.end())
 			return false;
-		id = it->second;
+		id = it->second.word_id;
 		return true;
 	}
 
-	const std::string& get_word(WordInt id)const
+	bool is_stop_word(const std::string& word)const
 	{
-		return words_[id];
+		auto it = stop_words_.find(word);
+		if(it == stop_words_.end())
+			return false;
+		return true;
 	}
 
 	//no other operations should take place while this method is called
-	void update_dictionary()
+	void synchronize_dictionary()
 	{
-		words_.insert(words_.end(), new_words_.begin(), new_words_.end());
-		new_words_idx_ = 0;
-		std::sort(words_.begin(), words_.end());
-		for(size_t idx = 0; idx < words_.size(); idx++)
-			words_ids_[words_[idx]] = idx;
 	}
 
-	size_t size()const
-	{	return words_.size();	}
+	size_t words_no()const
+	{	return words_map_.size();	}
 
 private:
 	static constexpr size_t MAX_NEW_WORDS = 100;
-	std::vector<std::string> words_;
-	std::unordered_map<std::string, WordInt> words_ids_;
+	std::map<std::string, WordInfo> words_map_;
+	std::unordered_set<std::string> stop_words_;
 	std::array<std::string, MAX_NEW_WORDS> new_words_;
 	std::atomic<size_t> new_words_idx_;
 };

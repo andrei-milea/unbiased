@@ -1,34 +1,44 @@
-#ifndef _SIMILARITY_H
-#define _SIMILARITY_H
+#ifndef _MINHASH_H
+#define _MINHASH_H
 
-#include <vector>
+#include "utils/murmur3.h"
+#include <cstdint>
 #include <set>
+#include <vector>
 #include <unordered_map>
+#include <algorithm>
+#include <cassert>
 #include <boost/functional/hash.hpp>
 
-namespace similarity
+
+class MinHash
 {
+public:
+    MinHash(size_t hash_fcts_no, int bands_no, size_t range_max)
+        :hash_fcts_no_(hash_fcts_no),
+		bands_no_(bands_no),
+        range_max_(range_max)
+    {
+        min_hash_values_.resize(hash_fcts_no_);
+    }
 
-	template <typename T>
-	inline float jaccard_index_bf(const std::set<T>& set1, const std::set<T>& set2)
-	{
-		std::vector<int> intersection;
-		std::vector<int> set_union;
-		std::set_intersection(set1.begin(), set1.end(), set2.begin(), set2.end(), std::back_inserter(intersection)); 
-		std::set_union(set1.begin(), set1.end(), set2.begin(), set2.end(), std::back_inserter(set_union)); 
-		return float(intersection.size()) / float(set_union.size());
-	}
+    ~MinHash()  {}
 
-	inline float jaccard_index_sign(const std::vector<uint64_t>& sign_set1, const std::vector<uint64_t>& sign_set2, size_t hash_fct_no)
-	{
-		size_t count = 0;
-		for(size_t hidx = 0; hidx < hash_fct_no; hidx++)
-		{
-			if(sign_set1[hidx] == sign_set1[hidx])
-				count++;
-		}
-		return float(count) / float(hash_fct_no);
-	}
+	Signature compute_signature(const std::set<uint32_t> &shingles)const
+    {
+		Signature signature;
+        for(const auto &elem : shingles)
+        {
+            for(size_t hidx = 0; hidx < hash_fcts_no_; hidx++)
+            {
+                uint32_t hash_val = 0;
+                MurmurHash3_x86_32(&elem, sizeof(uint32_t), hidx, &hash_val);
+                hash_val %= range_max_;
+                if(min_hash_values_[hidx] > hash_val)
+                    min_hash_values_[hidx] = hash_val;
+            }
+        }
+    }
 
 	inline std::vector<std::unordered_map<size_t, std::vector<size_t>>> compute_lsh_groups(size_t bands_no, size_t hash_fcts_no, const std::vector<std::vector<uint64_t>>& signatures)
     {
@@ -53,7 +63,11 @@ namespace similarity
         return lsh_buckets;
     }
 
+private:
+    size_t hash_fcts_no_;
+	int bands_no_;
+    size_t range_max_;
+	mutable std::vector<uint32_t> min_hash_values_;
 };
 
 #endif
-

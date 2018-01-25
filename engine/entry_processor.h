@@ -17,12 +17,12 @@ public:
 	EntryProcessor(boost::asio::io_service* ios, size_t buff_max_size)
 		:asio_service_(ios),
 		buffer_max_size_(buff_max_size),
-		vocabulary_(MongoDb::get().load_vocabulary()),
-		article_builder_(vocabulary_)
+		vocabulary_(MongoDb::get().load_vocabulary_map(), MongoDb::get().load_vocabulary_stop_words()),
+		article_builder_(vocabulary_, MongoDb::get().get_articles_no())
 	{
 	}
 
-	void scrap_and_process(const std::string& url)
+	void scrap_and_process(const std::string& url)const
 	{
 		std::string buffer_str('\0', buffer_max_size_);
 		bp::async_pipe apipe(*asio_service_);
@@ -39,11 +39,11 @@ public:
 	}
 
 private:
-	void process_entry(const std::string& entry_str)
+	void process_entry(const std::string& entry_str)const
 	{
 		try
 		{
-			auto article = article_builder_.build_article(entry_str);
+			auto article = article_builder_.from_xml(entry_str);
 		}
 		catch(std::exception& ex)
 		{

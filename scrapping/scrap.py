@@ -65,7 +65,7 @@ def scrap_vocabulary(srcs_filename):
     vocabulary = set()
     for source_str in sources:
         try:
-            source = newspaper.build(source_str, memoize_articles=False, number_threads=2, fetch_images=False)
+            source = newspaper.build(source_str, memoize_articles=False, fetch_images=False)
         except Exception as exp:
             print('build source exception: ' + src_article + ' error: ' + repr(exp))
         print(source_str + " " + str(len(source.articles)))
