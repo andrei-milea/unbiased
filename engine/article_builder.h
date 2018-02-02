@@ -4,6 +4,7 @@
 #include "minhash.h"
 #include "vocabulary.h"
 #include "article.h"
+#include "lsh_deduplication.h"
 
 #include <functional>
 #include <boost/property_tree/ptree.hpp>
@@ -13,15 +14,14 @@
 using boost::property_tree::ptree;
 using namespace boost::locale::boundary;
 
-const int HASH_FCTS_NO = 200;
-
 class ArticleBuilder
 {
 public:
-	ArticleBuilder(Vocabulary &vocabulary, uint64_t articles_no)
+	ArticleBuilder(Vocabulary &vocabulary, uint64_t articles_no, const std::vector<std::pair<std::string, Signature>>& docs_signatures)
 		:vocabulary_(vocabulary),
 		articles_no_(articles_no),
-		min_hash_(HASH_FCTS_NO, SIGNATURE_SIZE, vocabulary_.words_no())
+		min_hash_(SIGNATURE_SIZE, vocabulary_.words_no()),
+		lsh_deduplication_(SIGNATURE_SIZE, docs_signatures)
 	{}
 
 	Article from_xml(const std::string &article_xml)const
@@ -29,15 +29,17 @@ public:
 		Article article;
 		ptree pt;
 		read_xml(article_xml, pt);
-		article.meta_.url = pt.get<std::string>("article.url");
-		article.meta_.title = pt.get<std::string>("article.title");
-		article.meta_.date = pt.get<std::string>("article.date");
+		article.url = pt.get<std::string>("article.url");
+		article.title = pt.get<std::string>("article.title");
+		article.date = pt.get<std::string>("article.date");
 		auto authors_node = pt.get_child("article.authors");
 		for(const auto& author_node : authors_node)
-			article.meta_.authors.push_back(author_node.second.get<std::string>("author"));
+			article.authors.push_back(author_node.second.get<std::string>("author"));
 
 		std::string text = pt.get<std::string>("article.text");
-		add_similarity_measures(text, article.similarity_.tf, article.similarity_.idf, article.similarity_.signature);
+		article.length = text.size();
+		add_similarity_measures(text, article.tf, article.idf, article.signature);
+		article.source = lsh_deduplication_.process_doc(std::make_pair(article.id, article.signature));
 		return article;
 	}
 
@@ -103,6 +105,7 @@ protected:
 	Vocabulary &vocabulary_;
 	uint64_t articles_no_;
 	MinHash min_hash_;
+	mutable LSHDeduplication lsh_deduplication_;
 };
 
 #endif

@@ -18,7 +18,7 @@ public:
 		:asio_service_(ios),
 		buffer_max_size_(buff_max_size),
 		vocabulary_(MongoDb::get().load_vocabulary_map(), MongoDb::get().load_vocabulary_stop_words()),
-		article_builder_(vocabulary_, MongoDb::get().get_articles_no())
+		article_builder_(vocabulary_, MongoDb::get().get_articles_no(), MongoDb::get().load_articles_signatures())
 	{
 	}
 
@@ -44,6 +44,7 @@ private:
 		try
 		{
 			auto article = article_builder_.from_xml(entry_str);
+			MongoDb::get().save_article(article);
 		}
 		catch(std::exception& ex)
 		{

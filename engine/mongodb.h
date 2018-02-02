@@ -11,8 +11,7 @@
 #include <string>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
-
-
+#include <bsoncxx/builder/stream/document.hpp>
 
 class MongoDb
 {
@@ -28,7 +27,11 @@ public:
 
 	std::unordered_set<std::string> load_vocabulary_stop_words()const;
 
+	void save_article(const Article& article);
+
 	std::vector<Article> load_articles()const;
+
+	std::vector<std::pair<std::string, Signature>> load_articles_signatures()const;
 
 	uint64_t get_articles_no()const;
 
@@ -55,6 +58,7 @@ private:
 	mongocxx::instance inst_;
 	mongocxx::client client_conn_;
 	mongocxx::database database_;
+	bsoncxx::builder::stream::document bson_builder_;
 };
 
 #endif
