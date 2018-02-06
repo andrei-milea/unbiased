@@ -13,7 +13,6 @@ struct Analytics
 	double accuracy_score;
 };
 
-
 class Article
 {
 public:

@@ -62,7 +62,15 @@ private:
 	std::string find_source(const std::vector<std::string> &duplicates) 
 	{
 		std::string source_id;
-		return source_id;
+		auto articles_dates = MongoDb::get().load_articles_dates(duplicates);
+		assert(articles_dates.size() == duplicates.size());
+		size_t min_date_idx = 0;
+		for(size_t idx = 1; idx < articles_dates.size(); idx++)
+		{
+			if(stof(articles_dates[idx].second) < stof(articles_dates[min_date_idx].second))	
+				min_date_idx = idx;
+		}
+		return articles_dates[min_date_idx].first;
 	}
 
 private:

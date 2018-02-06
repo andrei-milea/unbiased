@@ -29,9 +29,11 @@ public:
 
 	void save_article(const Article& article);
 
-	std::vector<Article> load_articles()const;
+	std::vector<Article> load_articles(const std::string& key, const std::string& value)const;
 
 	std::vector<std::pair<std::string, Signature>> load_articles_signatures()const;
+
+	std::vector<std::pair<std::string, std::string>> load_articles_dates(const std::vector<std::string> &articles_ids)const;
 
 	uint64_t get_articles_no()const;
 

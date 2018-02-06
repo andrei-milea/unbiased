@@ -38,43 +38,47 @@ public:
 
 		std::string text = pt.get<std::string>("article.text");
 		article.length = text.size();
+		auto tokens = tokenize(text);
 		add_similarity_measures(text, article.tf, article.idf, article.signature);
 		article.source = lsh_deduplication_.process_doc(std::make_pair(article.id, article.signature));
 		return article;
 	}
-
 protected:
-
-	void add_similarity_measures(const std::string& text, std::vector<double> &tf_vec, std::vector<double>& idf_vec, Signature& signature)const
+	std::vector<std::string> tokenize(const std::string& text)
 	{
-		std::set<uint32_t> shingles;
 		boost::locale::generator gen;
 		boost::locale::boundary::ssegment_index tokenizer(boost::locale::boundary::word, text.begin(), text.end(), gen("en_US.UTF-8")); 
-		auto tok_end = tokenizer.end();
+		std::vector<std::string> tokens(tokenizer.begin(), tokenizer.end());
+		return tokens;
+	}
+
+	void add_similarity_measures(const std::vector<std::string>& tokens, std::vector<double> &tf_vec, std::vector<double>& idf_vec, Signature& signature)const
+	{
+		std::set<uint32_t> shingles;
+		
 		std::unordered_map<std::string, WordInfo> tf_map;
-		for(auto word_it = tokenizer.begin(); word_it != tok_end; ++word_it)
+		for(for size_t tidx = 0; tidx < tokens.size(); tidx++)
 		{
-			if(true == vocabulary_.is_stop_word(*word_it)) //stop word detected
+			if(true == vocabulary_.is_stop_word(tokens[tidx])) //stop word detected
 			{
-				auto next_word_it = word_it;
-				auto shingle = get_shingle(*word_it, *(++next_word_it), *(++next_word_it));
+				auto shingle = get_shingle(tokens[tidx], tokens[tidx + 1], tokens[tidx + 2]);
 				shingles.insert(shingle);
 			}
 			else
 			{
 				WordInt word_id = 0;
-				if(true == vocabulary_.get_word_id(*word_it, word_id))
+				if(true == vocabulary_.get_word_id(tokens[tidx], word_id))
 				{
-					tf_map[*word_it].word_id = word_id;
-					tf_map[*word_it].freq++;
-					vocabulary_.increase_word_freq(*word_it);
+					tf_map[tokens[tidx]].word_id = word_id;
+					tf_map[tokens[tidx]].freq++;
+					vocabulary_.increase_word_freq(tokens[tidx]);
 				}
-				else if(true/* == vocabulary_.is_misspelling(*word_it)*/)
+				else if(true/* == vocabulary_.is_misspelling(tokens[tidx])*/)
 				{
 					//deal with misspelings
 				}
 				else
-					vocabulary_.add_new_word(*word_it);
+					vocabulary_.add_new_word(tokens[tidx]);
 			}
 		}
 		compute_tfidf(tf_map, tf_vec, idf_vec);

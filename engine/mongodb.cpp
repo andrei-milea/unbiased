@@ -16,6 +16,8 @@ using bsoncxx::builder::stream::finalize;
 using bsoncxx::builder::stream::array_context;
 using bsoncxx::builder::stream::open_array;
 using bsoncxx::builder::stream::close_array;
+using bsoncxx::builder::stream::open_document;
+using bsoncxx::builder::stream::close_document;
 using bsoncxx::builder::stream::finalize;
 
 std::map<std::string, WordInfo> MongoDb::load_vocabulary_map()const
@@ -98,17 +100,18 @@ void MongoDb::save_article(const Article& article)
 		throw runtime_error("MongoDb::save_article error: failed to insert value in db: ");
 }
 
-vector<Article> MongoDb::load_articles()const
+vector<Article> MongoDb::load_articles(const std::string& key, const std::string& value)const
 {
 	vector<Article> articles;
 	collection articles_collection = database_["articles"];
-	cursor result = articles_collection.find(document{} << finalize);
+	cursor result = articles_collection.find(document{} << key << value << finalize);
 	for(const auto& doc : result)
 	{
 		Article article;
 		article.id = doc["_id"].get_utf8().value.to_string();
 		article.url = doc["url"].get_utf8().value.to_string();
 		article.title = doc["title"].get_utf8().value.to_string();
+		article.date = doc["date"].get_utf8().value.to_string();
 		article.length = doc["length"].get_int64().value;
 
 		bsoncxx::array::view authors_array{doc["authors"].get_array().value};
@@ -145,11 +148,35 @@ vector<Article> MongoDb::load_articles()const
 	return articles;
 }
 
+std::vector<std::pair<std::string, std::string>> MongoDb::load_articles_dates(const std::vector<std::string> &articles_ids)const
+{
+	vector<pair<string, string>> articles_dates;
+	collection articles_collection = database_["articles"];
+	bsoncxx::builder::stream::document filter_builder;
+	filter_builder << "$or" << open_array << [&articles_ids](array_context<> arr)
+							 	{
+									for (const auto& article_id : articles_ids)
+										arr << article_id;
+							 	}	<< close_array;
+	mongocxx::options::find opts{};
+	opts.projection(document{} << "id" << 1 << "date" << 1 << finalize);
+	cursor result = articles_collection.find(filter_builder.view(), opts);
+	for(const auto& doc : result)
+	{
+		string article_id = doc["id"].get_utf8().value.to_string();
+		string article_date = doc["date"].get_utf8().value.to_string();
+		articles_dates.push_back(make_pair(article_id, article_date));
+	}
+	return articles_dates;
+}
+
 vector<pair<string, Signature>> MongoDb::load_articles_signatures()const
 {
 	vector<pair<string, Signature>> articles_signatures;
 	collection articles_collection = database_["articles"];
-	cursor result = articles_collection.find(document{} << finalize);
+	mongocxx::options::find opts{};
+	opts.projection(document{} << "id" << 1 << "signature" << 1 << finalize);
+	cursor result = articles_collection.find(document{} << finalize, opts);
 	for(const auto& doc : result)
 	{
 		string article_id = doc["_id"].get_utf8().value.to_string();

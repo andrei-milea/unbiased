@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <set>
 
-
 class MinHash
 {
 public:
