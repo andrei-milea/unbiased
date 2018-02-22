@@ -5,6 +5,7 @@
 #include <vector>
 
 const int SIGNATURE_SIZE = 100;
+const size_t MAX_WORDS_NO = 100000000;
 typedef std::array<int64_t, SIGNATURE_SIZE> Signature;
 
 struct Analytics
@@ -17,8 +18,7 @@ class Article
 {
 public:
 	Article()
-	:id(0),
-	length(0)
+	:length(0)
 	{}
 
 	std::string id;

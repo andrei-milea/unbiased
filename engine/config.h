@@ -30,6 +30,8 @@ class Config
 public:
 	size_t threads_no;
 	size_t scrapper_buff_size;
+	size_t update_vocab_freq;
+	std::string vocabulary_path;
 	PQLCredentials pql_credentials;
 	MongoCredentials mongo_credentials;
 
@@ -49,6 +51,8 @@ private:
             read_xml(cfg_file, pt);
             threads_no = pt.get<size_t>("config.threads_no");
 			scrapper_buff_size = pt.get<size_t>("config.scrapper_buff_size");
+			update_vocab_freq = pt.get<size_t>("config.update_vocab_freq");
+			vocabulary_path = pt.get<std::string>("config.vocabulary_path");
 
             pql_credentials.host = pt.get<std::string>("config.postgresql.host");
             pql_credentials.port = pt.get<std::string>("config.postgresql.port");

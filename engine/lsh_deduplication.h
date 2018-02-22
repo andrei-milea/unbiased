@@ -1,6 +1,7 @@
 #ifndef _LSH_DEDUPLICATION_H
 #define _LSH_DEDUPLICATION_H
 
+#include "mongodb.h"
 #include <boost/functional/hash.hpp>
 #include <unordered_map>
 #include <vector>
@@ -21,6 +22,7 @@ public:
 	std::string process_doc(const std::pair<std::string, Signature>& doc_signature)
 	{
 		std::vector<std::string> duplicates;
+		duplicates.push_back(doc_signature.first);
 		size_t band_rows = 0, row_idx = 0;
 		for(size_t band_idx = 0; band_idx < bands_no_; band_idx++)
 		{
@@ -34,9 +36,10 @@ public:
 				duplicates.insert(duplicates.begin(), lsh_buckets_[band_idx][hash_value].begin(), lsh_buckets_[band_idx][hash_value].end());
 			lsh_buckets_[band_idx][hash_value].push_back(doc_signature.first);
 		}
-		duplicates.push_back(doc_signature.first);
 		if(duplicates.size() > 1)
-		return find_source(duplicates);
+			return find_source(duplicates);
+		else
+			return duplicates;
 	}
 
 private:
@@ -61,7 +64,7 @@ private:
 
 	std::string find_source(const std::vector<std::string> &duplicates) 
 	{
-		std::string source_id;
+		assert(!duplicates.empty());
 		auto articles_dates = MongoDb::get().load_articles_dates(duplicates);
 		assert(articles_dates.size() == duplicates.size());
 		size_t min_date_idx = 0;

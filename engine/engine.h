@@ -12,7 +12,7 @@ public:
 		:entry_processor_(&io_service_, Config::get().scrapper_buff_size)
 	{}
 
-	const EntryProcessor& get_processor()const
+	EntryProcessor& get_processor()
 	{
 		return entry_processor_;
 	}

@@ -2,6 +2,7 @@ import newspaper
 from newspaper import Article
 import random
 from nltk_utils import get_vocabulary
+from process_urls import xml_str
 import gc
 
 def crawl_website(url):
@@ -20,7 +21,7 @@ def download_articles_sample(srcs_filename):
     articles = []
     for source_str in sources:
         try:
-            source = newspaper.build(source_str, memoize_articles=False, number_threads=1, fetch_images=False)
+            source = newspaper.build(source_str, memoize_articles=False, number_threads=4, fetch_images=False)
         except Exception as exp:
             print('build source exception: ' + src_article + ' error: ' + repr(exp))
         print(source_str + " " + str(len(source.articles)))
@@ -37,7 +38,11 @@ def download_articles_sample(srcs_filename):
                     break;
             except Exception as exp:
                 print('download/parse article exception for: ' + source_str + ' error: ' + repr(exp))
-    return articles
+
+    articles_outfile = open("articles.xml", 'w')
+    for article in articles:
+        article_xml = xml_str(article)
+        articles_outfile.write(article_xml + "\n\n")
 
 def get_articles_urls(srcs_filename):
     sources_file = open(srcs_filename, 'r')

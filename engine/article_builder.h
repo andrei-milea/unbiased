@@ -1,84 +1,101 @@
 #ifndef _ARTICLE_BUILDER_H
 #define _ARTICLE_BUILDER_H
 
+#include "utils/tokenize.h"
+#include "utils/stemmer/porter2_stemmer.h"
 #include "minhash.h"
 #include "vocabulary.h"
 #include "article.h"
 #include "lsh_deduplication.h"
 
 #include <functional>
+#include <sstream>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <boost/locale.hpp>
 
 using boost::property_tree::ptree;
-using namespace boost::locale::boundary;
 
 class ArticleBuilder
 {
 public:
-	ArticleBuilder(Vocabulary &vocabulary, uint64_t articles_no, const std::vector<std::pair<std::string, Signature>>& docs_signatures)
-		:vocabulary_(vocabulary),
-		articles_no_(articles_no),
-		min_hash_(SIGNATURE_SIZE, vocabulary_.words_no()),
-		lsh_deduplication_(SIGNATURE_SIZE, docs_signatures)
-	{}
+	ArticleBuilder(uint64_t articles_no, const std::vector<std::pair<std::string, Signature>>& docs_signatures)
+	:articles_no_(articles_no),
+	min_hash_(SIGNATURE_SIZE, MAX_WORDS_NO),
+	lsh_deduplication_(SIGNATURE_SIZE, docs_signatures)
+	{
+		std::ifstream ifs(Config::get().vocabulary_path);
+        boost::archive::text_iarchive iarchive(ifs);
+        iarchive >> vocabulary_;
+	}
 
-	Article from_xml(const std::string &article_xml)const
+	~ArticleBuilder()
+	{
+		save_vocabulary();
+	}
+
+	void save_vocabulary()const
+	{
+		std::ofstream ofs(Config::get().vocabulary_path);
+		boost::archive::text_oarchive oarchive(ofs);
+		oarchive << vocabulary_;
+	}
+
+	Article from_xml(const std::string &article_xml)
     {
 		Article article;
 		ptree pt;
-		read_xml(article_xml, pt);
+		std::stringstream ss;
+		ss << article_xml;
+		read_xml(ss, pt);
 		article.url = pt.get<std::string>("article.url");
 		article.title = pt.get<std::string>("article.title");
 		article.date = pt.get<std::string>("article.date");
 		auto authors_node = pt.get_child("article.authors");
 		for(const auto& author_node : authors_node)
-			article.authors.push_back(author_node.second.get<std::string>("author"));
+			article.authors.push_back(author_node.second.data());
 
 		std::string text = pt.get<std::string>("article.text");
 		article.length = text.size();
 		auto tokens = tokenize(text);
-		add_similarity_measures(text, article.tf, article.idf, article.signature);
+		add_similarity_measures(tokens, article.tf, article.idf, article.signature);
 		article.source = lsh_deduplication_.process_doc(std::make_pair(article.id, article.signature));
+		articles_no_++;
 		return article;
 	}
-protected:
-	std::vector<std::string> tokenize(const std::string& text)
-	{
-		boost::locale::generator gen;
-		boost::locale::boundary::ssegment_index tokenizer(boost::locale::boundary::word, text.begin(), text.end(), gen("en_US.UTF-8")); 
-		std::vector<std::string> tokens(tokenizer.begin(), tokenizer.end());
-		return tokens;
-	}
 
-	void add_similarity_measures(const std::vector<std::string>& tokens, std::vector<double> &tf_vec, std::vector<double>& idf_vec, Signature& signature)const
+	void add_similarity_measures(const std::vector<std::string>& tokens, std::vector<double> &tf_vec, std::vector<double>& idf_vec, Signature& signature)
 	{
 		std::set<uint32_t> shingles;
 		
 		std::unordered_map<std::string, WordInfo> tf_map;
-		for(for size_t tidx = 0; tidx < tokens.size(); tidx++)
+		for(size_t tidx = 0; tidx < tokens.size(); tidx++)
 		{
 			if(true == vocabulary_.is_stop_word(tokens[tidx])) //stop word detected
 			{
-				auto shingle = get_shingle(tokens[tidx], tokens[tidx + 1], tokens[tidx + 2]);
-				shingles.insert(shingle);
+				if(tidx + 2 > tokens.size())
+				{
+					auto shingle = get_shingle(tokens[tidx], tokens[tidx + 1], tokens[tidx + 2]);
+					shingles.insert(shingle);
+				}
 			}
 			else
 			{
+				auto token = tokens[tidx];
+				Porter2Stemmer::trim(token);
+				Porter2Stemmer::stem(token);
 				WordInt word_id = 0;
-				if(true == vocabulary_.get_word_id(tokens[tidx], word_id))
+				if(true == vocabulary_.get_word_id(token, word_id))
 				{
-					tf_map[tokens[tidx]].word_id = word_id;
-					tf_map[tokens[tidx]].freq++;
-					vocabulary_.increase_word_freq(tokens[tidx]);
+					tf_map[token].word_id = word_id;
+					tf_map[token].freq++;
+					vocabulary_.increase_word_freq(token);
 				}
 				else if(true/* == vocabulary_.is_misspelling(tokens[tidx])*/)
 				{
 					//deal with misspelings
 				}
 				else
-					vocabulary_.add_new_word(tokens[tidx]);
+					vocabulary_.add_new_word(token);
 			}
 		}
 		compute_tfidf(tf_map, tf_vec, idf_vec);
@@ -106,10 +123,10 @@ protected:
 	}
 
 protected:
-	Vocabulary &vocabulary_;
+	Vocabulary vocabulary_;
 	uint64_t articles_no_;
 	MinHash min_hash_;
-	mutable LSHDeduplication lsh_deduplication_;
+	LSHDeduplication lsh_deduplication_;
 };
 
 #endif

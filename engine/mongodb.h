@@ -5,6 +5,7 @@
 #include "article.h"
 #include "config.h"
 
+#include <curl/curl.h>
 #include <unordered_set>
 #include <map>
 #include <vector>
@@ -21,11 +22,6 @@ public:
 		static MongoDb instance;
 		return instance;
 	}
-	
-
-	std::map<std::string, WordInfo> load_vocabulary_map()const;
-
-	std::unordered_set<std::string> load_vocabulary_stop_words()const;
 
 	void save_article(const Article& article);
 
@@ -47,13 +43,23 @@ private:
 
 	mongocxx::uri get_connection_uri()const
 	{
-		return mongocxx::uri{"mongodb://" + Config::get().mongo_credentials.username  + ":" + Config::get().mongo_credentials.password + "@" + Config::get().mongo_credentials.server};
+		return mongocxx::uri{"mongodb://" + Config::get().mongo_credentials.username  + ":" + url_encode(Config::get().mongo_credentials.password) + "@" + Config::get().mongo_credentials.server};
 	}
 
 	MongoDb(const MongoDb&) = delete;
 	MongoDb(MongoDb&&) = delete;
 	MongoDb& operator=(const MongoDb&) = delete;
 	MongoDb& operator=(MongoDb &&) = delete;
+
+	std::string url_encode(const std::string &source)const
+	{
+		CURL *curl = curl_easy_init();
+		char *cres = curl_easy_escape(curl, source.c_str(), source.length());
+		std::string res(cres);
+		curl_free(cres);
+		curl_easy_cleanup(curl);
+		return res;
+	}
 
 private:
 	std::string db_str_;

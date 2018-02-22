@@ -10,8 +10,8 @@ class MinHash
 {
 public:
     MinHash(size_t hash_fcts_no, size_t range_max)
-        :hash_fcts_no_(hash_fcts_no),
-        range_max_(range_max)
+	:hash_fcts_no_(hash_fcts_no),
+	range_max_(range_max)
     {
     }
 

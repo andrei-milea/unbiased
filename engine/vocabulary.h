@@ -1,30 +1,88 @@
 #ifndef _VOCABULARY_H
 #define _VOCABULARY_H
 
+#include "utils/tokenize.h"
 #include <iostream>
 #include <string>
 #include <vector>
 #include <unordered_set>
 #include <map>
 #include <atomic>
+#include <fstream>
+
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/unordered_set.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/array.hpp>
 
 
 typedef uint32_t WordInt;
 struct WordInfo
 {
+	WordInfo()
+	:word_id(0), freq(0)
+	{}
+
 	WordInt word_id;
 	uint64_t freq;
 };
 
+namespace boost {
+namespace serialization {
+
+template<class Archive>
+void serialize(Archive & ar, WordInfo & word_info, const unsigned int version)
+{
+    ar & word_info.word_id;
+    ar & word_info.freq;
+}
+
+}
+}//namespace boost
+
 class Vocabulary
 {
 public:
-	Vocabulary(const std::map<std::string, WordInfo>& words_map, const std::unordered_set<std::string>& stop_words)
-		:words_map_(words_map),
-		stop_words_(stop_words),
-		new_words_idx_(0)
+	Vocabulary()
+	:new_words_idx_(0)
 	{
 	}
+
+	Vocabulary(const std::string& words_filename, const std::string& stopwords_filename)
+	:new_words_idx_(0)
+	{
+		std::ifstream words_file(words_filename);
+		std::ifstream stopwords_file(stopwords_filename);
+		if(!words_file.is_open())
+			throw std::runtime_error("Vocabulary::Vocabulary error: failed to open words file - " + words_filename);
+		if(!stopwords_file.is_open())
+			throw std::runtime_error("Vocabulary::Vocabulary error: failed to open words file - " + stopwords_filename);
+
+		std::string words_str, stopwords_str;
+		std::getline(words_file, words_str, '\n');
+		std::getline(stopwords_file, stopwords_str, '\n');
+
+		
+		std::vector<std::string> words = tokenize_stem(words_str);
+		std::vector<std::string> stopwords = tokenize(stopwords_str);
+
+		for(const auto& stop_word : stopwords)
+			stop_words_.insert(stop_word);
+
+		for(size_t idx = 0; idx < words.size(); idx++)
+			if(words_map_.find(words[idx]) == words_map_.end() && stop_words_.find(words[idx]) == stop_words_.end())
+				words_map_[words[idx]].word_id = idx;
+	}
+
+	friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        ar & words_map_;
+        ar & stop_words_;
+        ar & new_words_;
+    }
 
 	void add_new_word(const std::string& word)
 	{
@@ -71,6 +129,15 @@ public:
 
 	size_t words_no()const
 	{	return words_map_.size();	}
+
+	size_t stopwords_no()const
+	{	return stop_words_.size();	}
+
+	const std::unordered_set<std::string>& get_stop_words()const
+	{
+		return stop_words_;
+	}
+
 
 private:
 	static constexpr size_t MAX_NEW_WORDS = 100;

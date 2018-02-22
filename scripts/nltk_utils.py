@@ -7,17 +7,23 @@ from nltk import word_tokenize
 
 from scipy import linalg
 
-def corpus_vocab():
-    eng_stop_words = set(stopwords.words("english"))
-    words = corpus.words.words()
-    lematizer = WordNetLemmatizer()
-    words =  [lematizer.lemmatize(word) for word in words if word not in eng_stop_words]
-    return words, eng_stop_words
+def print_corpus_vocab(words_filename, stopwords_filename):
+    words_outfile = open(words_filename, 'w')
+    stopwords_outfile = open(stopwords_filename, 'w')
+    stop_words = set(stopwords.words("english"))
+    words = []
+    for word in corpus.words.words():
+        if word not in stop_words and len(word) > 2 and not word[0].isupper():
+            words.append(word)
+    for word in words:
+        words_outfile.write(word + ", ")
+    for word in stop_words:
+        stopwords_outfile.write(word + ", ")
 
 def lemma_tokenize(text):
-    eng_stop_words = set(stopwords.words())
+    stop_words = set(stopwords.words())
     lemmatizer = WordNetLemmatizer()
-    return [lemmatizer.lemmatize(t) for t in word_tokenize(text) if t not in eng_stop_words]
+    return [lemmatizer.lemmatize(t) for t in word_tokenize(text) if t not in stop_words]
 
 def get_vocabulary(text):
     vectorizer = CountVectorizer(analyzer = "word", token_pattern=r'\w{4,}', tokenizer = lemma_tokenize, preprocessor = None, max_features = 1000000)
@@ -49,5 +55,16 @@ def run_lsa(term_doc_matrix, features):
         for sidx in sorted_idxs:
                 print(features[sidx])
         print("concept end")
+
+def main():
+    try:
+        print_corpus_vocab("test1", "test2")
+    except Exception as exp:
+        print('caught error: ' + repr(exp))
+
+if __name__ == "__main__":
+    main()
+
+
 
 

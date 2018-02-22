@@ -17,12 +17,12 @@ public:
 	EntryProcessor(boost::asio::io_service* ios, size_t buff_max_size)
 		:asio_service_(ios),
 		buffer_max_size_(buff_max_size),
-		vocabulary_(MongoDb::get().load_vocabulary_map(), MongoDb::get().load_vocabulary_stop_words()),
-		article_builder_(vocabulary_, MongoDb::get().get_articles_no(), MongoDb::get().load_articles_signatures())
+		article_builder_(MongoDb::get().get_articles_no(), MongoDb::get().load_articles_signatures()),
+		processed_articles_(0)
 	{
 	}
 
-	void scrap_and_process(const std::string& url)const
+	void scrap_and_process(const std::string& url)
 	{
 		std::string buffer_str('\0', buffer_max_size_);
 		bp::async_pipe apipe(*asio_service_);
@@ -36,15 +36,23 @@ public:
 							std::cout << ec.message() << std::endl;
 					};
 		boost::asio::async_read(apipe, boost::asio::buffer(&buffer_str[0], buffer_str.size()), get_res);
+		if(processed_articles_ > Config::get().update_vocab_freq)
+		{
+			//wait for all articles to be processed
+			processed_articles_ = 0;
+			article_builder_.save_vocabulary();
+		}
 	}
 
 private:
-	void process_entry(const std::string& entry_str)const
+	void process_entry(const std::string& entry_str)
 	{
 		try
 		{
 			auto article = article_builder_.from_xml(entry_str);
 			MongoDb::get().save_article(article);
+			processed_articles_++;
+			
 		}
 		catch(std::exception& ex)
 		{
@@ -55,8 +63,8 @@ private:
 private:
 	boost::asio::io_service *asio_service_;
 	size_t buffer_max_size_;
-	Vocabulary vocabulary_;
 	ArticleBuilder article_builder_;
+	mutable std::atomic<size_t> processed_articles_;
 };
 
 #endif
