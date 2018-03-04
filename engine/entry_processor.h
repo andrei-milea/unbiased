@@ -17,7 +17,7 @@ public:
 	EntryProcessor(boost::asio::io_service* ios, size_t buff_max_size)
 		:asio_service_(ios),
 		buffer_max_size_(buff_max_size),
-		article_builder_(MongoDb::get().get_articles_no(), MongoDb::get().load_articles_signatures()),
+		article_builder_(MongoDb::get().load_articles_signatures()),
 		processed_articles_(0)
 	{
 	}
@@ -49,10 +49,13 @@ private:
 	{
 		try
 		{
-			auto article = article_builder_.from_xml(entry_str);
-			MongoDb::get().save_article(article);
-			processed_articles_++;
-			
+			Article article;
+			bool res = article_builder_.from_xml(entry_str, article);
+			if(res)
+			{
+				MongoDb::get().save_article(article);
+				processed_articles_++;
+			}
 		}
 		catch(std::exception& ex)
 		{

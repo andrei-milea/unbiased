@@ -22,9 +22,10 @@ vector<string> load_articles_xml(const string& articles_filename)
 	std::string articles_str((istreambuf_iterator<char>(articles_file)), istreambuf_iterator<char>());
 	typedef split_iterator<string::iterator> string_split_iterator;
 	std::vector<std::string> articles_xml;
-    for(auto it = make_split_iterator(articles_str, first_finder("</article>", is_iequal())); it != string_split_iterator(); ++it)
+    for(auto it = make_split_iterator(articles_str, first_finder("</article>\n\n", is_iequal())); it != string_split_iterator(); ++it)
     {
-		articles_xml.push_back(copy_range<std::string>(*it) + "</article>");
+		if(!copy_range<std::string>(*it).empty())
+			articles_xml.push_back(copy_range<std::string>(*it) + "</article>");
     }
 	return articles_xml;
 }
@@ -32,11 +33,29 @@ vector<string> load_articles_xml(const string& articles_filename)
 BOOST_AUTO_TEST_CASE(test_article_from_xml)
 {
 	std::vector<std::pair<std::string, Signature>> docs_signatures;
-	ArticleBuilder article_builder(0, docs_signatures);
+	ArticleBuilder article_builder(docs_signatures, 0.30);
+	vector<Article> articles;
 	auto articles_xml = load_articles_xml("articles.xml");
 	for(const auto& article_xml : articles_xml)
 	{
-		article_builder.from_xml(article_xml);
+		Article new_article;
+		bool res = article_builder.from_xml(article_xml, new_article);
+		if(res)
+			articles.push_back(new_article);
+		//else
+			//cout << "title: " << new_article.title << endl;
+	}
+	cout << "articles: " << articles_xml.size() << "valid articles: " << articles.size() << "\n";
+	for(const auto& article : articles)
+	{
+		BOOST_REQUIRE(article.length > 1000);
+		BOOST_REQUIRE(article.words_no > article.unknown_words_no);
+		size_t words_sum = 0;
+		for(size_t idx = 0; idx < article.tf.size(); idx++)
+		{
+			words_sum += article.tf[idx];
+		}
+		BOOST_CHECK_EQUAL(words_sum, article.words_no - article.unknown_words_no);
 	}
 }
 

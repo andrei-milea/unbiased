@@ -1,7 +1,6 @@
 #ifndef _LSH_DEDUPLICATION_H
 #define _LSH_DEDUPLICATION_H
 
-#include "mongodb.h"
 #include <boost/functional/hash.hpp>
 #include <unordered_map>
 #include <vector>
@@ -19,7 +18,7 @@ public:
 		compute_lsh_groups(docs_signatures);
 	}
 
-	std::string process_doc(const std::pair<std::string, Signature>& doc_signature)
+	std::vector<std::string> process_doc(const std::pair<std::string, Signature>& doc_signature)
 	{
 		std::vector<std::string> duplicates;
 		duplicates.push_back(doc_signature.first);
@@ -36,10 +35,7 @@ public:
 				duplicates.insert(duplicates.begin(), lsh_buckets_[band_idx][hash_value].begin(), lsh_buckets_[band_idx][hash_value].end());
 			lsh_buckets_[band_idx][hash_value].push_back(doc_signature.first);
 		}
-		if(duplicates.size() > 1)
-			return find_source(duplicates);
-		else
-			return duplicates;
+		return duplicates;
 	}
 
 private:
@@ -62,19 +58,7 @@ private:
         }
     }
 
-	std::string find_source(const std::vector<std::string> &duplicates) 
-	{
-		assert(!duplicates.empty());
-		auto articles_dates = MongoDb::get().load_articles_dates(duplicates);
-		assert(articles_dates.size() == duplicates.size());
-		size_t min_date_idx = 0;
-		for(size_t idx = 1; idx < articles_dates.size(); idx++)
-		{
-			if(stof(articles_dates[idx].second) < stof(articles_dates[min_date_idx].second))	
-				min_date_idx = idx;
-		}
-		return articles_dates[min_date_idx].first;
-	}
+	
 
 private:
 	size_t signature_size_;

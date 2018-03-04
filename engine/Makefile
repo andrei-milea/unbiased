@@ -1,6 +1,6 @@
 all: engine
 CFLAGS = -std=c++14 -c -g -Wall -I /usr/include/boost -I /usr/include/pqxx -I /usr/local/include/mongocxx/v_noabi -I /usr/local/include/bsoncxx/v_noabi 
-LFLAGS = -lboost_system -lboost_filesystem -lboost_thread -lboost_date_time -lboost_serialization -lboost_locale -lpqxx -lmongocxx -lbsoncxx
+LFLAGS = -lboost_system -lboost_filesystem -lboost_thread -lboost_date_time -lboost_serialization -lboost_locale -lpqxx -lmongocxx -lbsoncxx -lcurl
 GCC = g++
 EXE = ../bin/
 

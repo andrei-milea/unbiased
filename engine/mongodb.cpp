@@ -42,11 +42,6 @@ void MongoDb::save_article(const Article& article)
 									for (auto elem : article.tf)
 										arr << elem;
 							 	}	<< close_array
-							<< "idf" << open_array << [&article](array_context<> arr)
-							 	{
-									for (auto elem : article.idf)
-										arr << elem;
-							 	}	<< close_array
 							<< "keywords" << open_array << [&article](array_context<> arr)
 							 	{
 									for (const auto& elem : article.keywords)
@@ -94,10 +89,6 @@ vector<Article> MongoDb::load_articles(const std::string& key, const std::string
 		for(const bsoncxx::array::element& tf_elem : tf_array)
 			article.tf.push_back(tf_elem.get_double().value);
 
-		bsoncxx::array::view idf_array{doc["idf"].get_array().value};
-		for(const bsoncxx::array::element& idf_elem : tf_array)
-			article.idf.push_back(idf_elem.get_double().value);
-
 		bsoncxx::array::view keywords_array{doc["keywords"].get_array().value};
 		for(const bsoncxx::array::element& keyword_elem : keywords_array)
 			article.keywords.push_back(keyword_elem.get_utf8().value.to_string());
@@ -120,7 +111,7 @@ std::vector<std::pair<std::string, std::string>> MongoDb::load_articles_dates(co
 	filter_builder << "$or" << open_array << [&articles_ids](array_context<> arr)
 							 	{
 									for (const auto& article_id : articles_ids)
-										arr << article_id;
+										arr << open_document << "id" << article_id << close_document;
 							 	}	<< close_array;
 	mongocxx::options::find opts{};
 	opts.projection(document{} << "id" << 1 << "date" << 1 << finalize);

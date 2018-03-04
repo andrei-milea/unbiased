@@ -16,30 +16,31 @@
 #include <boost/serialization/map.hpp>
 #include <boost/serialization/array.hpp>
 
-
 typedef uint32_t WordInt;
-struct WordInfo
+
+template<typename Archive> 
+void serialize(Archive & ar, std::atomic<uint64_t> atom, unsigned version)
 {
-	WordInfo()
-	:word_id(0), freq(0)
-	{}
-
-	WordInt word_id;
-	uint64_t freq;
-};
-
-namespace boost {
-namespace serialization {
-
-template<class Archive>
-void serialize(Archive & ar, WordInfo & word_info, const unsigned int version)
-{
-    ar & word_info.word_id;
-    ar & word_info.freq;
 }
 
-}
-}//namespace boost
+
+
+// outside of any namespace
+BOOST_SERIALIZATION_SPLIT_FREE(std::atomic<uint64_t>)
+
+namespace boost { namespace serialization {
+	template<class Archive>
+	void save(Archive& ar, const std::atomic<uint64_t>& atom, unsigned int) {
+		ar << atom.load(); 
+	}
+	template<class Archive>
+	void load(Archive& ar, std::atomic<uint64_t>& atom, unsigned int) {
+		uint64_t val;
+		ar >> val; 
+		atom = val;
+	}
+}} // namespace boost::serialization
+
 
 class Vocabulary
 {
@@ -64,15 +65,23 @@ public:
 		std::getline(stopwords_file, stopwords_str, '\n');
 
 		
-		std::vector<std::string> words = tokenize_stem(words_str);
+		std::set<std::string> words = tokenize_stem(words_str);
 		std::vector<std::string> stopwords = tokenize(stopwords_str);
 
 		for(const auto& stop_word : stopwords)
 			stop_words_.insert(stop_word);
 
-		for(size_t idx = 0; idx < words.size(); idx++)
-			if(words_map_.find(words[idx]) == words_map_.end() && stop_words_.find(words[idx]) == stop_words_.end())
-				words_map_[words[idx]].word_id = idx;
+		size_t count = 0;
+		for(const auto& word :  words)
+		{
+			if(stop_words_.find(word) == stop_words_.end())
+			{
+				words_map_[word] = count;
+				words_freq_[count] = 0;
+				count++;
+			}
+		}
+
 	}
 
 	friend class boost::serialization::access;
@@ -80,6 +89,7 @@ public:
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & words_map_;
+        ar & words_freq_;
         ar & stop_words_;
         ar & new_words_;
     }
@@ -95,14 +105,17 @@ public:
 			std::cout << "too many new words added\n";
 	}
 
-	void increase_word_freq(const std::string& word)
+	//thread safe - atomic
+	void increase_word_freq(WordInt word_id)
 	{
-		words_map_.at(word).freq++;
+		assert(word_id < words_freq_.size());
+		words_freq_[word_id]++;
 	}
 
-	uint64_t get_word_freq(const std::string& word)const
+	uint64_t get_word_freq(WordInt word_id)const
 	{
-		return words_map_.at(word).freq;
+		assert(word_id < words_freq_.size());
+		return words_freq_[word_id];
 	}
 
 	bool get_word_id(const std::string& word, WordInt &id)const
@@ -110,7 +123,7 @@ public:
 		auto it = words_map_.find(word);
 		if(it == words_map_.end())
 			return false;
-		id = it->second.word_id;
+		id = it->second;
 		return true;
 	}
 
@@ -140,8 +153,10 @@ public:
 
 
 private:
+	static constexpr size_t MAX_WORDS_NO = 300000;
 	static constexpr size_t MAX_NEW_WORDS = 100;
-	std::map<std::string, WordInfo> words_map_;
+	std::map<std::string, WordInt> words_map_;
+	std::array<std::atomic<uint64_t>, MAX_WORDS_NO> words_freq_;
 	std::unordered_set<std::string> stop_words_;
 	std::array<std::string, MAX_NEW_WORDS> new_words_;
 	std::atomic<size_t> new_words_idx_;

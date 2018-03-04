@@ -10,7 +10,7 @@ using namespace std;
 
 const string words_filename("words.dat");
 const string stopwords_filename("stop_words.dat");
-const string vocab_path = Config::get().vocabulary_path + "test";
+const string vocab_path = Config::get().vocabulary_path + "_test";
 
 /*BOOST_AUTO_TEST_CASE(test_stemmer)
 {
@@ -67,12 +67,22 @@ BOOST_AUTO_TEST_CASE(test_word_freq)
 	BOOST_REQUIRE(vocab.words_no() == 152588);
 	BOOST_REQUIRE(vocab.stopwords_no() == 153);
 
-	vocab.increase_word_freq("tabl");
-	vocab.increase_word_freq("water");
-	vocab.increase_word_freq("mous");
+	WordInt id1 = 0, id2 = 0, id3 = 0;
+   	bool res = vocab.get_word_id("tabl", id1);
+	BOOST_REQUIRE(res);
+	vocab.increase_word_freq(id1);
 
-	BOOST_REQUIRE(vocab.get_word_freq("tabl") == 1);
-	BOOST_REQUIRE(vocab.get_word_freq("water") == 1);
-	BOOST_REQUIRE(vocab.get_word_freq("mous") == 1);
+   	res = vocab.get_word_id("water", id2);
+	BOOST_REQUIRE(res);
+	vocab.increase_word_freq(id2);
+
+
+   	res = vocab.get_word_id("mous", id3);
+	BOOST_REQUIRE(res);
+	vocab.increase_word_freq(id3);
+
+	BOOST_REQUIRE(vocab.get_word_freq(id1) == 1);
+	BOOST_REQUIRE(vocab.get_word_freq(id2) == 1);
+	BOOST_REQUIRE(vocab.get_word_freq(id3) == 1);
 }
 
