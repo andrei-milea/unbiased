@@ -19,7 +19,7 @@ using boost::property_tree::ptree;
 class ArticleBuilder
 {
 public:
-	ArticleBuilder(const std::vector<std::pair<std::string, Signature>>& docs_signatures, float invalid_words_threshold = 0.30)
+	ArticleBuilder(const std::vector<std::pair<std::string, Signature>>& docs_signatures, float invalid_words_threshold = 0.3)
 	:min_hash_(SIGNATURE_SIZE, MAX_WORDS_NO),
 	lsh_deduplication_(SIGNATURE_SIZE, docs_signatures),
 	invalid_words_threshold_(invalid_words_threshold)
@@ -110,6 +110,7 @@ private:
 		if(float(invalid_words_count) / words_no > invalid_words_threshold_) 
 			return false;
 
+		//std::cout << "shingles: " << shingles.size() << std::endl;
 		article.signature = min_hash_.compute_signature(shingles);
 		return true;
 	}

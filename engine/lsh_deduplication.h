@@ -1,10 +1,12 @@
 #ifndef _LSH_DEDUPLICATION_H
 #define _LSH_DEDUPLICATION_H
 
+#include "article.h"
 #include <boost/functional/hash.hpp>
 #include <unordered_map>
 #include <vector>
 #include <cassert>
+#include <iostream>
 
 class LSHDeduplication
 {
@@ -56,6 +58,14 @@ private:
                 lsh_buckets_[band_idx][hash_value].push_back(docs_signatures[sidx].first);
             }
         }
+
+        for(size_t band_idx = 0; band_idx < bands_no_; band_idx++)
+			for(const auto& el : lsh_buckets_[band_idx])
+				if(el.second.size() > 1)
+				{
+					std::cout << "elem1: " << el.second[0] << std::endl;
+					std::cout << "elem2: " << el.second[1] << std::endl;
+				}
     }
 
 	

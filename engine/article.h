@@ -3,10 +3,11 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 const int SIGNATURE_SIZE = 100;
 const size_t MAX_WORDS_NO = 100000000;
-typedef std::array<int64_t, SIGNATURE_SIZE> Signature;
+typedef std::array<uint32_t, SIGNATURE_SIZE> Signature;
 
 struct Analytics
 {

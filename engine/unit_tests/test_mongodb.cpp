@@ -2,13 +2,52 @@
 
 #include "../mongodb.h"
 #include "../config.h"
+#include "article_utils.h"
 #include "boost/test/included/unit_test.hpp"
+#include <vector>
 
 using namespace boost::unit_test;
+using namespace std;
 
-BOOST_AUTO_TEST_CASE(test_database)
+BOOST_AUTO_TEST_CASE(test_save_articles)
 {
-	const auto& mongo_inst = MongoDb::get();
+	std::vector<std::pair<std::string, Signature>> docs_signatures;
+	ArticleBuilder article_builder(docs_signatures, 0.15);
+	vector<Article> articles;
+	auto articles_xml = load_articles_xml("articles.xml");
+	size_t count = 0;
+	std::set<Signature> signatures;
+	for(const auto& article_xml : articles_xml)
+	{
+		Article new_article;
+		bool res = article_builder.from_xml(article_xml, new_article);
+		if(res)
+		{
+			articles.push_back(new_article);
+			signatures.insert(new_article.signature);
+			count++;
+		}
+	}
+
+	auto& mongo_inst = MongoDb::get("test_db");
+	mongo_inst.drop_collection("articles");
+	for(const auto& article : articles)
+	{
+		mongo_inst.save_article(article);
+	}
+
 	auto articles_no = mongo_inst.get_articles_no();
-	BOOST_REQUIRE(articles_no == 0);
+	BOOST_REQUIRE_EQUAL(articles_no, count);
+
+	auto articles_signatures = mongo_inst.load_articles_signatures();
+	for(const auto& article_signature : articles_signatures)
+	{
+		auto it = signatures.find(article_signature.second);
+		BOOST_REQUIRE(it != signatures.end());
+	}
+
+	
+
+	mongo_inst.drop_collection("articles");
 }
+

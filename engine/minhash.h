@@ -20,6 +20,8 @@ public:
 	Signature compute_signature(const std::set<uint32_t> &shingles)const
     {
 		Signature signature;
+		for(size_t idx = 0; idx < signature.size(); idx++)
+			signature[idx] = range_max_ + 1;
         for(const auto &elem : shingles)
         {
             for(size_t hidx = 0; hidx < hash_fcts_no_; hidx++)

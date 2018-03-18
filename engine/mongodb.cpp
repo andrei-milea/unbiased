@@ -35,7 +35,7 @@ void MongoDb::save_article(const Article& article)
 							<< "signature" << open_array << [&article](array_context<> arr)
 							 	{
 									for (auto elem : article.signature)
-										arr << elem;
+										arr << (int32_t)elem;
 							 	}	<< close_array
 							<< "tf" << open_array << [&article](array_context<> arr)
 							 	{
@@ -134,7 +134,7 @@ vector<pair<string, Signature>> MongoDb::load_articles_signatures()const
 	cursor result = articles_collection.find(document{} << finalize, opts);
 	for(const auto& doc : result)
 	{
-		string article_id = doc["_id"].get_utf8().value.to_string();
+		string article_id = doc["_id"].get_oid().value.to_string();
 		Signature article_signature;
 		bsoncxx::array::view sig_array{doc["signature"].get_array().value};
 		int idx = 0;

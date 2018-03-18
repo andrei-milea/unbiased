@@ -1,4 +1,4 @@
-all: test_vocabulary test_article_builder test_mongodb
+all: test_vocabulary test_article_builder test_mongodb test_minhash
 CFLAGS = -std=c++14 -c -g -Wall -I /usr/include/boost -I /usr/include/pqxx -I /usr/local/include/mongocxx/v_noabi -I /usr/local/include/bsoncxx/v_noabi 
 LFLAGS = -lboost_system -lboost_filesystem -lboost_thread -lboost_serialization -lboost_date_time -lboost_locale -lpqxx -lmongocxx -lbsoncxx -lcurl
 GCC = g++
@@ -10,17 +10,23 @@ test_vocabulary: test_vocabulary.o porter2_stemmer.o
 test_article_builder: test_article_builder.o porter2_stemmer.o mongodb.o murmur3.o
 	$(GCC) $(LFLAGS) porter2_stemmer.o mongodb.o murmur3.o test_article_builder.o -o $(EXE)test_article_builder
 
-test_mongodb: test_mongodb.o mongodb.o
-	$(GCC) $(LFLAGS) mongodb.o test_mongodb.o -o $(EXE)test_mongodb
+test_mongodb: test_mongodb.o mongodb.o murmur3.o porter2_stemmer.o
+	$(GCC) $(LFLAGS) murmur3.o porter2_stemmer.o mongodb.o test_mongodb.o -o $(EXE)test_mongodb
+
+test_minhash: test_minhash.o murmur3.o
+	$(GCC) $(LFLAGS) murmur3.o test_minhash.o -o $(EXE)test_minhash
 
 test_vocabulary.o: test_vocabulary.cpp ../vocabulary.h
 	$(GCC) $(CFLAGS) test_vocabulary.cpp -o test_vocabulary.o
 
-test_article_builder.o: test_article_builder.cpp ../article_builder.h ../lsh_deduplication.h
+test_article_builder.o: test_article_builder.cpp ../article_builder.h ../lsh_deduplication.h article_utils.h
 	$(GCC) $(CFLAGS) test_article_builder.cpp -o test_article_builder.o
 
-test_mongodb.o: test_mongodb.cpp
+test_mongodb.o: test_mongodb.cpp article_utils.h
 	$(GCC) $(CFLAGS) test_mongodb.cpp -o test_mongodb.o
+
+test_minhash.o: test_minhash.cpp ../minhash.h
+	$(GCC) $(CFLAGS) test_minhash.cpp -o test_minhash.o
 
 mongodb.o: ../mongodb.cpp ../mongodb.h ../article.h ../vocabulary.h
 	$(GCC) $(CFLAGS) ../mongodb.cpp -o mongodb.o
@@ -33,4 +39,4 @@ murmur3.o: ../utils/murmur3.c ../utils/murmur3.h
 
 
 clean:
-	rm -rf *.o $(EXE)test_vocabulary $(EXE)test_article_builder
+	rm -rf *.o $(EXE)test_vocabulary $(EXE)test_article_builder $(EXE)test_mongodb $(EXE)test_minhash

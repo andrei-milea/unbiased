@@ -17,13 +17,18 @@
 class MongoDb
 {
 public:
-	static MongoDb& get()
+	static MongoDb& get(const std::string& dbname = std::string())
 	{
-		static MongoDb instance;
+		static MongoDb instance(dbname);
 		return instance;
 	}
 
 	void save_article(const Article& article);
+
+	void drop_collection(const std::string& dbname)
+	{
+		database_[dbname].drop();
+	}
 
 	std::vector<Article> load_articles(const std::string& key, const std::string& value)const;
 
@@ -34,8 +39,8 @@ public:
 	uint64_t get_articles_no()const;
 
 private:
-	MongoDb()
-		:db_str_(Config::get().mongo_credentials.dbname),
+	MongoDb(const std::string& db_name)
+		:db_str_(db_name.empty() ? Config::get().mongo_credentials.dbname : db_name),
 		client_conn_(get_connection_uri()),
 		database_(client_conn_[db_str_])
 	{
