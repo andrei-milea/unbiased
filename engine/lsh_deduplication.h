@@ -20,10 +20,10 @@ public:
 		compute_lsh_groups(docs_signatures);
 	}
 
-	std::vector<std::string> process_doc(const std::pair<std::string, Signature>& doc_signature)
+	std::set<std::string> process_doc(const std::pair<std::string, Signature>& doc_signature)
 	{
-		std::vector<std::string> duplicates;
-		duplicates.push_back(doc_signature.first);
+		std::set<std::string> duplicates;
+		duplicates.insert(doc_signature.first);
 		size_t band_rows = 0, row_idx = 0;
 		for(size_t band_idx = 0; band_idx < bands_no_; band_idx++)
 		{
@@ -34,8 +34,8 @@ public:
 				boost::hash_combine(hash_value, doc_signature.second[row_idx]);
 			}
 			if(lsh_buckets_[band_idx].find(hash_value) != lsh_buckets_[band_idx].end())
-				duplicates.insert(duplicates.begin(), lsh_buckets_[band_idx][hash_value].begin(), lsh_buckets_[band_idx][hash_value].end());
-			lsh_buckets_[band_idx][hash_value].push_back(doc_signature.first);
+				duplicates.insert(lsh_buckets_[band_idx][hash_value].begin(), lsh_buckets_[band_idx][hash_value].end());
+			lsh_buckets_[band_idx][hash_value].insert(doc_signature.first);
 		}
 		return duplicates;
 	}
@@ -55,17 +55,9 @@ private:
                 {
                     boost::hash_combine(hash_value, docs_signatures[sidx].second[row_idx]);
                 }
-                lsh_buckets_[band_idx][hash_value].push_back(docs_signatures[sidx].first);
+                lsh_buckets_[band_idx][hash_value].insert(docs_signatures[sidx].first);
             }
         }
-
-        for(size_t band_idx = 0; band_idx < bands_no_; band_idx++)
-			for(const auto& el : lsh_buckets_[band_idx])
-				if(el.second.size() > 1)
-				{
-					std::cout << "elem1: " << el.second[0] << std::endl;
-					std::cout << "elem2: " << el.second[1] << std::endl;
-				}
     }
 
 	
@@ -74,7 +66,7 @@ private:
 	size_t signature_size_;
 	size_t bands_no_;
 	size_t rows_no_;
-	std::vector<std::unordered_map<size_t, std::vector<std::string>>> lsh_buckets_;
+	std::vector<std::unordered_map<size_t, std::set<std::string>>> lsh_buckets_;
 };
 
 #endif

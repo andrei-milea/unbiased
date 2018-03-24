@@ -1,9 +1,9 @@
 #ifndef _ARTICLE_BUILDER_H
 #define _ARTICLE_BUILDER_H
 
-#include "mongodb.h"
 #include "utils/tokenize.h"
 #include "utils/stemmer/porter2_stemmer.h"
+#include "config.h"
 #include "minhash.h"
 #include "vocabulary.h"
 #include "article.h"
@@ -13,6 +13,13 @@
 #include <sstream>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+
+enum class BuilderRes
+{
+	VALID,
+	DUPLICATE,
+	INVALID_WORDS
+};
 
 using boost::property_tree::ptree;
 
@@ -41,7 +48,12 @@ public:
 		oarchive << vocabulary_;
 	}
 
-	bool from_xml(const std::string &article_xml, Article &article)
+	const Vocabulary& get_vocabulary()const
+	{
+		return vocabulary_;
+	}
+
+	BuilderRes from_xml(const std::string &article_xml, Article &article)
     {
 		ptree pt;
 		std::stringstream ss;
@@ -59,17 +71,18 @@ public:
 		auto tokens = tokenize(text);
 		bool res = add_measures(tokens, article);
 		if(false == res)
-			return false;
-		auto duplicates = lsh_deduplication_.process_doc(std::make_pair(article.id, article.signature));
-		//article.source = find_source(duplicates);
-		return true;
+			return BuilderRes::INVALID_WORDS;
+		article.duplicates = lsh_deduplication_.process_doc(std::make_pair(article.id, article.signature));
+		if(article.duplicates.size() > 1)
+			return BuilderRes::DUPLICATE;
+		return BuilderRes::VALID;
 	}
 
 private:
 	bool add_measures(const std::vector<std::string>& tokens, Article& article)
 	{
 		std::set<uint32_t> shingles;
-		article.tf.resize(vocabulary_.words_no(), 0);
+		article.tf.resize(vocabulary_.words_no(), 0.0);
 		size_t words_no = 0, invalid_words_count = 0;
 		for(size_t tidx = 0; tidx < tokens.size(); tidx++)
 		{
@@ -124,20 +137,7 @@ private:
 		return hash_val;
 	}
 
-	std::string find_source(const std::vector<std::string> &duplicates) 
-	{
-		assert(!duplicates.empty());
-		auto articles_dates = MongoDb::get().load_articles_dates(duplicates);
-		/*if((articles_dates.size() == duplicates.size()))
-			throw std::logic_error("ArticleBuilder::find_source error: failed to retrieve all articles with given ids");*/
-		size_t min_date_idx = 0;
-		for(size_t idx = 1; idx < articles_dates.size(); idx++)
-		{
-			if(stof(articles_dates[idx].second) < stof(articles_dates[min_date_idx].second))	
-				min_date_idx = idx;
-		}
-		return articles_dates[min_date_idx].first;
-	}
+	
 
 protected:
 	Vocabulary vocabulary_;

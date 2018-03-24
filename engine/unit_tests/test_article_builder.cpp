@@ -19,8 +19,8 @@ BOOST_AUTO_TEST_CASE(test_article_from_xml)
 	for(const auto& article_xml : articles_xml)
 	{
 		Article new_article;
-		bool res = article_builder.from_xml(article_xml, new_article);
-		if(res)
+		auto result = article_builder.from_xml(article_xml, new_article);
+		if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
 		{
 			articles.push_back(new_article);
 		}
@@ -52,8 +52,8 @@ BOOST_AUTO_TEST_CASE(test_articles_signatures)
 	for(const auto& article_xml : articles_xml)
 	{
 		Article new_article;
-		bool res = article_builder.from_xml(article_xml, new_article);
-		if(res)
+		auto result = article_builder.from_xml(article_xml, new_article);
+		if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
 		{
 			articles.push_back(new_article);
 			articles_idxs.push_back(count);
@@ -61,25 +61,18 @@ BOOST_AUTO_TEST_CASE(test_articles_signatures)
 		count++;
 	}
 
-	for(size_t i = 0; i < articles.size(); i++)
-	{
-		for(size_t j = i + 1; j < articles.size(); j++)
-		{
-			if(articles[i].signature == articles[j].signature)
-				cout << "same signatures: " << i << " " << j << endl;
-		}
-	}
-
 	//check if same articles have the same signatures
 	cout << "80 articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
 	for(size_t idx = 0; idx < articles.size(); idx++)
 	{
 		Article new_article;
-		bool res = article_builder.from_xml(articles_xml[articles_idxs[idx]], new_article);
-		BOOST_REQUIRE(res);
+		auto result = article_builder.from_xml(articles_xml[articles_idxs[idx]], new_article);
+		BOOST_REQUIRE(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE);
 		BOOST_CHECK(new_article.signature == articles[idx].signature);
 		BOOST_CHECK(new_article.tf == articles[idx].tf);
 	}
+	//articles 59 and 65 are identical
+	BOOST_REQUIRE(articles[59].signature == articles[65].signature);
 }
 
 BOOST_AUTO_TEST_CASE(test_lsh_deduplication)
@@ -89,23 +82,26 @@ BOOST_AUTO_TEST_CASE(test_lsh_deduplication)
 	vector<Article> articles;
 	auto articles_xml = load_articles_xml("articles.xml");
 	vector<size_t> articles_idxs;
-	size_t count = 0;
 	for(const auto& article_xml : articles_xml)
 	{
 		Article new_article;
-		bool res = article_builder.from_xml(article_xml, new_article);
-		if(res)
+		auto result = article_builder.from_xml(article_xml, new_article);
+		if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
 		{
 			articles.push_back(new_article);
 			docs_signatures.push_back(make_pair(new_article.title, new_article.signature));
-			count++;
 		}
 	}
 	LSHDeduplication lsh_deduplication(SIGNATURE_SIZE, docs_signatures);
-	for(const auto& article_signature : docs_signatures)
+	docs_signatures[65].first = "new title";
+	for(size_t idx = 0; idx < docs_signatures.size(); idx++)
 	{
-		auto duplicates = lsh_deduplication.process_doc(article_signature);
-		BOOST_REQUIRE_EQUAL(duplicates.size(), 2);
+		docs_signatures[idx].first += "second";
+		auto duplicates = lsh_deduplication.process_doc(docs_signatures[idx]);
+		if(idx != 65)
+			BOOST_REQUIRE_EQUAL(duplicates.size(), 2);
+		else
+			BOOST_REQUIRE_EQUAL(duplicates.size(), 3);
 	}
 }
 

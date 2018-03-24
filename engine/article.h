@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <array>
+#include <set>
 
 const int SIGNATURE_SIZE = 100;
 const size_t MAX_WORDS_NO = 100000000;
@@ -25,10 +26,10 @@ public:
 	{}
 
 	std::string id;
-	std::string source;
 	std::string url;
 	std::string title;
 	std::string date;
+	std::string source;
 	std::vector<std::string> authors;
 	size_t length;
 	size_t words_no;
@@ -37,6 +38,7 @@ public:
 	std::vector<double> tf;
 	std::vector<std::string> keywords;
 	std::vector<std::string> entities;
+	std::set<std::string> duplicates;
 	Analytics analitycs;
 };
 

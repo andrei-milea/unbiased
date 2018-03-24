@@ -26,6 +26,7 @@ void MongoDb::save_article(const Article& article)
 	auto doc = bson_builder_ << "url" << article.url
 							 << "title" << article.title
 							 << "date" << article.date
+							 << "source" << article.source
 							 << "authors" << open_array << [&article](array_context<> arr)
 							 	{
 									for (const auto& author : article.authors)
@@ -35,7 +36,7 @@ void MongoDb::save_article(const Article& article)
 							<< "signature" << open_array << [&article](array_context<> arr)
 							 	{
 									for (auto elem : article.signature)
-										arr << (int32_t)elem;
+										arr << (int64_t)elem;
 							 	}	<< close_array
 							<< "tf" << open_array << [&article](array_context<> arr)
 							 	{
@@ -72,6 +73,7 @@ vector<Article> MongoDb::load_articles(const std::string& key, const std::string
 		article.title = doc["title"].get_utf8().value.to_string();
 		article.date = doc["date"].get_utf8().value.to_string();
 		article.length = doc["length"].get_int64().value;
+		article.source = doc["source"].get_utf8().value.to_string();
 
 		bsoncxx::array::view authors_array{doc["authors"].get_array().value};
 		for(const bsoncxx::array::element& auth_elem : authors_array)
@@ -81,7 +83,7 @@ vector<Article> MongoDb::load_articles(const std::string& key, const std::string
 		int idx = 0;
 		for(const bsoncxx::array::element& sig_elem : sig_array)
 		{
-			article.signature[idx] = sig_elem.get_int64().value;
+			article.signature[idx] = (uint32_t)sig_elem.get_int64().value;
 			idx++;
 		}
 
@@ -140,7 +142,7 @@ vector<pair<string, Signature>> MongoDb::load_articles_signatures()const
 		int idx = 0;
 		for(const bsoncxx::array::element& sig_elem : sig_array)
 		{
-			article_signature[idx] = sig_elem.get_int64().value;
+			article_signature[idx] = (uint32_t)sig_elem.get_int64().value;
 			idx++;
 		}
 		articles_signatures.push_back(make_pair(article_id, article_signature));

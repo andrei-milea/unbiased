@@ -50,8 +50,8 @@ private:
 		try
 		{
 			Article article;
-			bool res = article_builder_.from_xml(entry_str, article);
-			if(res)
+			BuilderRes result = article_builder_.from_xml(entry_str, article);
+			if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
 			{
 				MongoDb::get().save_article(article);
 				processed_articles_++;
@@ -61,6 +61,22 @@ private:
 		{
 			std::cout << "error processing article: " << ex.what() << std::endl;
 		}
+	}
+
+	std::string find_source(const std::set<std::string> &duplicates) 
+	{
+		assert(!duplicates.empty());
+		std::vector<std::string> duplicates_vec(duplicates.begin(), duplicates.end());
+		auto articles_dates = MongoDb::get().load_articles_dates(duplicates_vec);
+		if((articles_dates.size() == duplicates.size()))
+			throw std::logic_error("ArticleBuilder::find_source error: failed to retrieve all articles with given ids");
+		size_t min_date_idx = 0;
+		for(size_t idx = 1; idx < articles_dates.size(); idx++)
+		{
+			if(stof(articles_dates[idx].second) < stof(articles_dates[min_date_idx].second))	
+				min_date_idx = idx;
+		}
+		return articles_dates[min_date_idx].first;
 	}
 
 private:
