@@ -30,7 +30,7 @@ public:
 		database_[dbname].drop();
 	}
 
-	std::vector<Article> load_articles(const std::string& key, const std::string& value)const;
+	std::vector<Article> load_articles(const std::string& key="", const std::string& value="")const;
 
 	std::vector<std::pair<std::string, Signature>> load_articles_signatures()const;
 

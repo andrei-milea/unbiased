@@ -64,7 +64,8 @@ vector<Article> MongoDb::load_articles(const std::string& key, const std::string
 {
 	vector<Article> articles;
 	collection articles_collection = database_["articles"];
-	cursor result = articles_collection.find(document{} << key << value << finalize);
+	cursor result = (key.empty() && value.empty()) ? articles_collection.find(document{} << finalize) 
+					: articles_collection.find(document{} << key << value << finalize);
 	for(const auto& doc : result)
 	{
 		Article article;

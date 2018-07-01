@@ -46,6 +46,10 @@ BOOST_AUTO_TEST_CASE(test_save_articles)
 		BOOST_REQUIRE(it != signatures.end());
 	}
 
+
+	auto articles_db = mongo_inst.load_articles();
+	BOOST_REQUIRE(articles_db == articles);
+
 	mongo_inst.drop_collection("articles");
 }
 

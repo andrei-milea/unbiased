@@ -25,6 +25,13 @@ public:
 	unknown_words_no(0)
 	{}
 
+	bool operator==(const Article& article)const
+	{
+		return id == article.id && id == article.id && url == article.url && title == article.title && source == article.source 
+						&& authors == article.authors && length == article.length && words_no == article.words_no && signature == article.signature
+						&& tf == article.tf && keywords == article.keywords && entities == article.entities && duplicates == article.duplicates;
+	}
+
 	std::string id;
 	std::string url;
 	std::string title;
