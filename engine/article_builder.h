@@ -128,13 +128,16 @@ private:
 		return true;
 	}
 
+	//TODO fix 32-64bit combine
 	uint32_t get_shingle(const std::string& w1, const std::string& w2, const std::string& w3)const
 	{
 		std::hash<std::string> hash_fct{};
-        uint32_t hash_val = hash_fct(w1);
-        boost::hash_combine(hash_val, hash_fct(w2));
-        boost::hash_combine(hash_val, hash_fct(w3));
-		return hash_val;
+        uint64_t hash_val = hash_fct(w1);
+        uint32_t hash_val1 = hash_fct(w2);
+        uint32_t hash_val2 = hash_fct(w3);
+        boost::hash_combine(hash_val, hash_val1);
+        boost::hash_combine(hash_val, hash_val2);
+		return (uint32_t)hash_val;
 	}
 
 	

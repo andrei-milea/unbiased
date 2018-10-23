@@ -1,8 +1,6 @@
 from nltk import corpus
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from scrap import download_article
-from scrap import scrap_vocabulary
 import pymongo
 import urllib
 import numpy
@@ -27,7 +25,7 @@ class MongoUtils:
         articles_meta = collection.find({})
         if None == articles_meta:
             raise Exception('no articles meta found in database')
-        return articles_meta[0]
+        return articles_meta
 
     def load_term_doc_matrix(self):
         collection = self.db['term_doc_matrix']

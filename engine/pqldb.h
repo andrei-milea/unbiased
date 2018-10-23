@@ -2,8 +2,8 @@
 #define _PQLDB_H
 
 #include "config.h"
-#include <pqxx>
 #include <string>
+#include </usr/include/pqxx/pqxx>
 
 class PqlDb
 {
@@ -28,8 +28,8 @@ public:
 
 		std::vector<std::vector<std::string>> res_str{res.size()};
 		for(size_t row_idx = 0; row_idx < res.size(); row_idx++)
-			for(size_t col_idx = 0; col_idx < res[row_idx].size(); col_idx++)
-				res_str[row_idx].emplace_back(res[row_idx][col_idx].as<std::string>());
+			for(size_t col_idx = 0; col_idx < res[(int)row_idx].size(); col_idx++)
+				res_str[row_idx].emplace_back(res[(int)row_idx][(int)col_idx].as<std::string>());
 		return res_str;
 	}
 
