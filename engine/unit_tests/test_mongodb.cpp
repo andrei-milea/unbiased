@@ -2,7 +2,7 @@
 
 #include "../mongodb.h"
 #include "../config.h"
-#include "article_utils.h"
+#include "../utils/article_utils.h"
 #include <vector>
 #include "boost/test/included/unit_test.hpp"
 

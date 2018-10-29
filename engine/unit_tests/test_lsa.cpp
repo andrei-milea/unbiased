@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE "test_lsa"
 
 #include "../mongodb.h"
-#include "article_utils.h"
+#include "../utils/article_utils.h"
 #include "../lsa.h"
 #include "../config.h"
 #include "boost/test/included/unit_test.hpp"
@@ -13,7 +13,7 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(test_lsa_svd)
 {
 	std::vector<std::pair<std::string, Signature>> docs_signatures;
-	ArticleBuilder article_builder(docs_signatures, 0.2);
+	ArticleBuilder article_builder(docs_signatures, 0.17);
 	vector<Article> articles;
 	auto articles_xml = load_articles_xml("articles.xml");
 	for(const auto& article_xml : articles_xml)
@@ -42,5 +42,7 @@ BOOST_AUTO_TEST_CASE(test_lsa_svd)
 	LSA lsa_processor(article_builder.get_vocabulary());
 	lsa_processor.build_term_doc_matrix(articles, all_articles_no);
 	lsa_processor.run_svd();
+	//lsa_processor.print_term_doc_matrix();
+	lsa_processor.print_top_concepts(0.09);
 }
 

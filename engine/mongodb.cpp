@@ -33,6 +33,7 @@ void MongoDb::save_article(const Article& article)
 										arr << author;
 							 	}	<< close_array
 							<< "length" << int64_t(article.length)
+							<< "words_no" << int64_t(article.words_no)
 							<< "signature" << open_array << [&article](array_context<> arr)
 							 	{
 									for (auto elem : article.signature)
@@ -69,11 +70,12 @@ vector<Article> MongoDb::load_articles(const std::string& key, const std::string
 	for(const auto& doc : result)
 	{
 		Article article;
-		article.id = doc["_id"].get_utf8().value.to_string();
+		article.id = doc["_id"].get_oid().value.to_string();
 		article.url = doc["url"].get_utf8().value.to_string();
 		article.title = doc["title"].get_utf8().value.to_string();
 		article.date = doc["date"].get_utf8().value.to_string();
 		article.length = doc["length"].get_int64().value;
+		article.words_no = doc["words_no"].get_int64().value;
 		article.source = doc["source"].get_utf8().value.to_string();
 
 		bsoncxx::array::view authors_array{doc["authors"].get_array().value};
@@ -117,11 +119,11 @@ std::vector<std::pair<std::string, std::string>> MongoDb::load_articles_dates(co
 										arr << open_document << "id" << article_id << close_document;
 							 	}	<< close_array;
 	mongocxx::options::find opts{};
-	opts.projection(document{} << "id" << 1 << "date" << 1 << finalize);
+	opts.projection(document{} << "_id" << 1 << "date" << 1 << finalize);
 	cursor result = articles_collection.find(filter_builder.view(), opts);
 	for(const auto& doc : result)
 	{
-		string article_id = doc["id"].get_utf8().value.to_string();
+		string article_id = doc["_id"].get_oid().value.to_string();
 		string article_date = doc["date"].get_utf8().value.to_string();
 		articles_dates.push_back(make_pair(article_id, article_date));
 	}
@@ -133,7 +135,7 @@ vector<pair<string, Signature>> MongoDb::load_articles_signatures()const
 	vector<pair<string, Signature>> articles_signatures;
 	collection articles_collection = database_["articles"];
 	mongocxx::options::find opts{};
-	opts.projection(document{} << "id" << 1 << "signature" << 1 << finalize);
+	opts.projection(document{} << "_id" << 1 << "signature" << 1 << finalize);
 	cursor result = articles_collection.find(document{} << finalize, opts);
 	for(const auto& doc : result)
 	{
@@ -154,6 +156,6 @@ vector<pair<string, Signature>> MongoDb::load_articles_signatures()const
 uint64_t MongoDb::get_articles_no()const
 {
 	collection articles_collection = database_["articles"];
-	return articles_collection.count(document{} << finalize);
+	return articles_collection.count_documents(document{} << finalize);
 }
 

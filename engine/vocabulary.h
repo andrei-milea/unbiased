@@ -23,8 +23,6 @@ void serialize(Archive & ar, std::atomic<uint64_t> atom, unsigned version)
 {
 }
 
-
-
 // outside of any namespace
 BOOST_SERIALIZATION_SPLIT_FREE(std::atomic<uint64_t>)
 
@@ -127,6 +125,18 @@ public:
 		return true;
 	}
 
+	std::string get_word(WordInt id)const
+	{
+		auto it = find_if(words_map_.begin() , words_map_.end(), 
+						[id](const std::pair<std::string, WordInt> & elem) -> bool
+							{ 
+								return elem.second == id;
+   							});
+		if(it == words_map_.end())
+			throw std::runtime_error("Vocabulary::get_word error: word_id not found - " + std::to_string(id));
+		return it->first;
+	}
+
 	bool is_stop_word(const std::string& word)const
 	{
 		auto it = stop_words_.find(word);
@@ -155,7 +165,7 @@ public:
 private:
 	static constexpr size_t MAX_WORDS_NO = 300000;
 	static constexpr size_t MAX_NEW_WORDS = 100;
-	std::map<std::string, WordInt> words_map_;
+	std::map<std::string, WordInt> words_map_;//TODO use boost bimap
 	std::array<std::atomic<uint64_t>, MAX_WORDS_NO> words_freq_;
 	std::unordered_set<std::string> stop_words_;
 	std::array<std::string, MAX_NEW_WORDS> new_words_;

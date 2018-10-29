@@ -22,13 +22,13 @@ test_minhash: test_minhash.o murmur3.o
 test_vocabulary.o: test_vocabulary.cpp ../vocabulary.h
 	$(GCC) $(CFLAGS) test_vocabulary.cpp -o test_vocabulary.o
 
-test_article_builder.o: test_article_builder.cpp ../article_builder.h ../lsh_deduplication.h article_utils.h
+test_article_builder.o: test_article_builder.cpp ../article_builder.h ../lsh_deduplication.h ../utils/article_utils.h
 	$(GCC) $(CFLAGS) test_article_builder.cpp -o test_article_builder.o
 
-test_mongodb.o: test_mongodb.cpp article_utils.h
+test_mongodb.o: test_mongodb.cpp ../utils/article_utils.h
 	$(GCC) $(CFLAGS) test_mongodb.cpp -o test_mongodb.o
 
-test_lsa.o: test_lsa.cpp article_utils.h ../lsa.cpp ../lsa.h
+test_lsa.o: test_lsa.cpp ../utils/article_utils.h ../lsa.cpp ../lsa.h
 	$(GCC) $(CFLAGS) test_lsa.cpp -o test_lsa.o
 
 test_minhash.o: test_minhash.cpp ../minhash.h

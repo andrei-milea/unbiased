@@ -9,11 +9,11 @@ import datetime
 import xml.etree.ElementTree
 
 class MongoUtils:
-    def __init__(self):
+    def __init__(self, collection_name):
         server, username, password = self.__get_credentials("../bin/config.xml")
         print("mongodb://" + username + ":" + urllib.parse.quote(password) + "@" + server)
         self.client = pymongo.MongoClient("mongodb://" + username + ":" + urllib.parse.quote(password) + "@" + server)
-        self.db = self.client['unbiased']
+        self.db = self.client[collection_name]
 
     def __get_credentials(self, config_filename):
         xml_root = xml.etree.ElementTree.parse(config_filename).getroot()
@@ -21,7 +21,7 @@ class MongoUtils:
         return mongo_elem[0].text, mongo_elem[1].text, mongo_elem[2].text
 
     def load_articles_meta(self):
-        collection = self.db['articles_meta']
+        collection = self.db['articles']
         articles_meta = collection.find({})
         if None == articles_meta:
             raise Exception('no articles meta found in database')

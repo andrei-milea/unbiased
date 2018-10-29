@@ -69,9 +69,14 @@ public:
 		std::string text = pt.get<std::string>("article.text");
 		article.length = text.size();
 		auto tokens = tokenize(text);
-		bool res = add_measures(tokens, article);
+		std::set<WordInt> words_ids;
+		bool res = add_measures(tokens, article, words_ids);
 		if(false == res)
 			return BuilderRes::INVALID_WORDS;
+
+		//increase words frequency for all words in the article
+		for(WordInt word_id : words_ids)
+			vocabulary_.increase_word_freq(word_id);
 		article.duplicates = lsh_deduplication_.process_doc(std::make_pair(article.id, article.signature));
 		if(article.duplicates.size() > 1)
 			return BuilderRes::DUPLICATE;
@@ -79,7 +84,7 @@ public:
 	}
 
 private:
-	bool add_measures(const std::vector<std::string>& tokens, Article& article)
+	bool add_measures(const std::vector<std::string>& tokens, Article& article, std::set<WordInt> &word_ids)
 	{
 		std::set<uint32_t> shingles;
 		article.tf.resize(vocabulary_.words_no(), 0.0);
@@ -105,7 +110,7 @@ private:
 				{
 					assert(word_id < vocabulary_.words_no());
 					article.tf[word_id]++;
-					vocabulary_.increase_word_freq(word_id);
+					word_ids.insert(word_id);
 				}
 				else if(false/* == vocabulary_.is_misspelling(tokens[tidx])*/)
 				{

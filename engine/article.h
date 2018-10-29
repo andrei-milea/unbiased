@@ -1,6 +1,7 @@
 #ifndef _ARTICLE_H
 #define _ARTICLE_H
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include <array>
@@ -27,9 +28,16 @@ public:
 
 	bool operator==(const Article& article)const
 	{
-		return id == article.id && id == article.id && url == article.url && title == article.title && source == article.source 
+		return /*id == article.id &&*/ url == article.url && title == article.title && source == article.source 
 						&& authors == article.authors && length == article.length && words_no == article.words_no && signature == article.signature
-						&& tf == article.tf && keywords == article.keywords && entities == article.entities && duplicates == article.duplicates;
+						&& tf == article.tf && keywords == article.keywords && entities == article.entities /*&& duplicates == article.duplicates*/;
+	}
+
+	void print_tf()const
+	{
+		for(size_t idx = 0; idx < tf.size(); idx++)
+			std::cout << tf[idx] << " ";
+		std::cout << "\n";
 	}
 
 	std::string id;
