@@ -9,7 +9,7 @@ class Engine
 {
 public:
 	Engine()
-		:entry_processor_(&io_service_, Config::get().scrapper_buff_size)
+		:entry_processor_(Config::get().scrapper_buff_size)
 	{}
 
 	EntryProcessor& get_processor()
@@ -18,7 +18,6 @@ public:
 	}
 
 private:
-	boost::asio::io_service io_service_;
 	EntryProcessor entry_processor_;
 };
 

@@ -145,8 +145,6 @@ private:
 		return (uint32_t)hash_val;
 	}
 
-	
-
 protected:
 	Vocabulary vocabulary_;
 	MinHash min_hash_;

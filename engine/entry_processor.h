@@ -8,30 +8,40 @@
 #include <boost/asio.hpp>
 #include <boost/process.hpp>
 #include <map>
+#include <thread>
 
 namespace bp = boost::process;
 
 class EntryProcessor
 {
 public:
-	EntryProcessor(boost::asio::io_service* ios, size_t buff_max_size)
-		:asio_service_(ios),
-		buffer_max_size_(buff_max_size),
+	EntryProcessor(size_t buff_max_size)
+		:buffer_max_size_(buff_max_size),
 		article_builder_(MongoDb::get().load_articles_signatures()),
 		processed_articles_(0)
 	{
 	}
 
+	void run(uint32_t threads_no)
+	{
+		for(size_t idx = 0; idx < threads_no; idx++)
+		{
+			std::thread new_thread([&]{asio_service_.run();}  );
+			new_thread.detach();
+		}
+	}
+
+	//enqueues build_article
 	void scrap_and_process(const std::string& url)
 	{
 		std::string buffer_str('\0', buffer_max_size_);
-		bp::async_pipe apipe(*asio_service_);
+		bp::async_pipe apipe(asio_service_);
 		bp::child c(bp::search_path("python"), std::string("scrap.py ") + url, bp::std_out > apipe);
 
 		auto get_res = [this, &buffer_str](const boost::system::error_code &ec, std::size_t size)
 					{
 						if(!ec)
-							process_entry(buffer_str);
+							build_article(buffer_str);
 						else
 							std::cout << ec.message() << std::endl;
 					};
@@ -45,7 +55,7 @@ public:
 	}
 
 private:
-	void process_entry(const std::string& entry_str)
+	void build_article(const std::string& entry_str)
 	{
 		try
 		{
@@ -80,7 +90,7 @@ private:
 	}
 
 private:
-	boost::asio::io_service *asio_service_;
+	boost::asio::io_service asio_service_;
 	size_t buffer_max_size_;
 	ArticleBuilder article_builder_;
 	mutable std::atomic<size_t> processed_articles_;

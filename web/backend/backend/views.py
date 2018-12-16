@@ -48,7 +48,21 @@ def parse_contribute_req(request):
         elif parts[0] == 'keywords':
             keywords = parts[1]
     return src_type, user_input, keywords
-    
+
+from proton import Message
+from proton.utils import BlockingConnection
+from proton.handlers import IncomingMessageHandler
+
+class QpidProtonSender:
+    def __init__(self):
+        self.conn_ = BlockingConnection("localhost:5673")
+        self.sender_ = self.conn_.create_sender("unbiased.new_urls")
+
+    def send(self, message):
+        self.sender_.send(Message(body=message))
+
+qpid_sender = QpidProtonSender()
+
 @login_required
 def contribute_page(request):
     html = None
@@ -68,10 +82,11 @@ def contribute_page(request):
                 user_entry = UserEntry.objects.create(url=input_url, keywords=uinput[2])
                 user_entry.save()
                 user_entry.user.add(request.user)
+                qpid_sender.send(user_entry.url)
             else:
                 user_entry = UserEntry.objects.create(user='test', text=uinput[1], keywords=uinput[2])
             #user_entry.save()
-            call(["killall", "-s", "USR1", "engine_main"])
+            #call(["killall", "-s", "USR1", "engine_main"])
 
     except ValidationError as exc:
         logging.getLogger('root').debug("validation error: " + str(exc))

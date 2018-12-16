@@ -41,6 +41,12 @@ public:
         return cfg;
     }
 
+
+	Config(const Config&) = delete;
+	Config(Config&&) = delete;
+	Config& operator=(const Config&) = delete;
+	Config& operator=(Config &&) = delete;
+
 private:
     Config(){}
     explicit Config(const std::string &cfg_file)
@@ -72,9 +78,6 @@ private:
         }
     }
 };
-
-
-
 
 #endif
 

@@ -7,7 +7,9 @@
 #include <vector>
 #include <cassert>
 #include <iostream>
+#include <mutex>
 
+//this needs to be built on top of a cache(see redis or mongodb in-memory engine)
 class LSHDeduplication
 {
 public:
@@ -16,6 +18,7 @@ public:
 	bands_no_(20),
 	rows_no_(signature_size_ / bands_no_)
 	{
+		std::lock_guard<std::mutex> lck(mtx_);
         lsh_buckets_.resize(bands_no_);
 		compute_lsh_groups(docs_signatures);
 	}
@@ -25,6 +28,7 @@ public:
 		std::set<std::string> duplicates;
 		duplicates.insert(doc_signature.first);
 		size_t band_rows = 0, row_idx = 0;
+		std::vector<std::pair<size_t, size_t>> bucket_hashes;
 		for(size_t band_idx = 0; band_idx < bands_no_; band_idx++)
 		{
 			size_t hash_value = 17;
@@ -35,8 +39,14 @@ public:
 			}
 			if(lsh_buckets_[band_idx].find(hash_value) != lsh_buckets_[band_idx].end())
 				duplicates.insert(lsh_buckets_[band_idx][hash_value].begin(), lsh_buckets_[band_idx][hash_value].end());
-			lsh_buckets_[band_idx][hash_value].insert(doc_signature.first);
+
+			bucket_hashes.emplace_back(band_idx, hash_value);
+
 		}
+
+		std::lock_guard<std::mutex> lck(mtx_);
+		for(const auto& bucket_hash : bucket_hashes)
+			lsh_buckets_[bucket_hash.first][bucket_hash.second].insert(doc_signature.first);
 		return duplicates;
 	}
 
@@ -67,6 +77,7 @@ private:
 	size_t bands_no_;
 	size_t rows_no_;
 	std::vector<std::unordered_map<size_t, std::set<std::string>>> lsh_buckets_;
+	std::mutex mtx_;
 };
 
 #endif

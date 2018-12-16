@@ -19,7 +19,7 @@ class MongoDb
 public:
 	static MongoDb& get(const std::string& dbname = std::string())
 	{
-		static MongoDb instance(dbname);
+		static MongoDb instance{dbname};
 		return instance;
 	}
 
@@ -38,6 +38,11 @@ public:
 
 	uint64_t get_articles_no()const;
 
+	MongoDb(const MongoDb&) = delete;
+	MongoDb(MongoDb&&) = delete;
+	MongoDb& operator=(const MongoDb&) = delete;
+	MongoDb& operator=(MongoDb &&) = delete;
+
 private:
 	MongoDb(const std::string& db_name)
 		:db_str_(db_name.empty() ? Config::get().mongo_credentials.dbname : db_name),
@@ -51,16 +56,11 @@ private:
 		return mongocxx::uri{"mongodb://" + Config::get().mongo_credentials.username  + ":" + url_encode(Config::get().mongo_credentials.password) + "@" + Config::get().mongo_credentials.server};
 	}
 
-	MongoDb(const MongoDb&) = delete;
-	MongoDb(MongoDb&&) = delete;
-	MongoDb& operator=(const MongoDb&) = delete;
-	MongoDb& operator=(MongoDb &&) = delete;
-
-	std::string url_encode(const std::string &source)const
+		std::string url_encode(const std::string &source)const
 	{
 		CURL *curl = curl_easy_init();
 		char *cres = curl_easy_escape(curl, source.c_str(), source.length());
-		std::string res(cres);
+		std::string res{cres};
 		curl_free(cres);
 		curl_easy_cleanup(curl);
 		return res;

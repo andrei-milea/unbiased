@@ -6,42 +6,20 @@
 #include <csignal>
 #include <exception>
 
+#include <qpid/messaging/Connection.h>
+#include <qpid/messaging/Message.h>
+#include <qpid/messaging/Receiver.h>
+#include <qpid/messaging/Sender.h>
+#include <qpid/messaging/Session.h>
+
 using namespace std;
-Engine g_engine;
+using namespace qpid::messaging;
 
-void signal_handler(int sig)
-{
-	cout << "handler called\n";
-	const std::string select_entries_str{"SELECT * FROM backend_userentry WHERE processed = False"};
-	try
-	{
-		auto user_entries = PqlDb::get().get_unprocessed_entries();
-		for(const auto& user_entry : user_entries)
-		{
-			assert(user_entry.size() == 5);
-			g_engine.get_processor().scrap_and_process(user_entry[1]);
-		}
-		//thread_pool.post();
-		
-		/*for(const auto& user_entry : user_entries)
-		{
-			cout << "entry: ";
-			for(const auto& entry_elem : user_entry)
-				cout << entry_elem << " ";
-			cout << endl;
-		}*/
-	}
-	catch(const std::exception& ex)
-	{
-		cout << "signal_handler failed: " << ex.what() << endl;
-	}
-}
-
-int main()
+/*void init()
 {
 	//compute term doc matrix
 	//with available data
-	/*const string articles_path("articles.xml");
+	const string articles_path("articles.xml");
 	std::vector<std::pair<std::string, Signature>> docs_signatures;
 	ArticleBuilder article_builder(docs_signatures, 0.17);
 	vector<Article> articles;
@@ -69,13 +47,34 @@ int main()
 	size_t all_articles_no = mongo_inst.get_articles_no();
 	LSA lsa_processor(article_builder.get_vocabulary());
 	lsa_processor.build_term_doc_matrix(articles, all_articles_no);
-	lsa_processor.run_svd();*/
+	lsa_processor.run_svd();
+}*/
 
-	//register signal from django
-	signal(SIGUSR1, signal_handler);	
-	signal_handler(SIGUSR1);
-	while(true)
+int main()
+{
+	Engine engine;
+	engine.get_processor().run(3);
+
+	try
 	{
+		const string broker = "localhost:5673";
+		const string address = "unbiased.new_urls; {create: always, node: {type: 'queue'}}";
+		const string connection_options = "";
+		Connection connection(broker, connection_options);
+		connection.open();
+		Session session = connection.createSession();
+		Receiver receiver = session.createReceiver(address);
+		while(true)
+		{
+			auto message = receiver.fetch();
+			std::cout << message.getContent() << std::endl;
+			//engine.get_processor().scrap_and_process(message.getContent());
+			session.acknowledge();
+		}
+	}
+	catch(const std::exception& ex)
+	{
+		cout << "critical error" << ex.what() << "\n";
 	}
 	return 0;
 }

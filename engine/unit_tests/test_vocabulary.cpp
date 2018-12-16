@@ -31,27 +31,27 @@ const string vocab_path = Config::get().vocabulary_path + "_test";
 
 BOOST_AUTO_TEST_CASE(test_save_load)
 {
-	Vocabulary vocab(words_filename, stopwords_filename);
+	Vocabulary vocab{words_filename, stopwords_filename};
 	BOOST_REQUIRE(vocab.words_no() == 152588);
 	BOOST_REQUIRE(vocab.stopwords_no() == 153);
 
 	//save vocab
 	{
-		std::ofstream ofs(vocab_path);
-		boost::archive::text_oarchive oarchive(ofs);
+		std::ofstream ofs{vocab_path};
+		boost::archive::text_oarchive oarchive{ofs};
 		oarchive << vocab;
 	}
 
 	Vocabulary saved_vocab;
-	std::ifstream ifs(vocab_path);
-	boost::archive::text_iarchive iarchive(ifs);
+	std::ifstream ifs{vocab_path};
+	boost::archive::text_iarchive iarchive{ifs};
 	iarchive >> saved_vocab;
 	BOOST_REQUIRE(saved_vocab.words_no() == vocab.words_no());
 }
 
 BOOST_AUTO_TEST_CASE(test_stop_words)
 {
-	Vocabulary vocab(words_filename, stopwords_filename);
+	Vocabulary vocab{words_filename, stopwords_filename};
 	BOOST_REQUIRE(vocab.words_no() == 152588);
 	BOOST_REQUIRE(vocab.stopwords_no() == 153);
 	BOOST_REQUIRE(vocab.is_stop_word("to"));
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(test_stop_words)
 
 BOOST_AUTO_TEST_CASE(test_word_freq)
 {
-	Vocabulary vocab(words_filename, stopwords_filename);
+	Vocabulary vocab{words_filename, stopwords_filename};
 	BOOST_REQUIRE(vocab.words_no() == 152588);
 	BOOST_REQUIRE(vocab.stopwords_no() == 153);
 
