@@ -12,8 +12,7 @@ using namespace std;
 
 BOOST_AUTO_TEST_CASE(test_article_from_xml)
 {
-	std::vector<std::pair<std::string, Signature>> docs_signatures;
-	ArticleBuilder article_builder(docs_signatures, 0.3);
+	ArticleBuilder article_builder(0.3);
 	vector<Article> articles;
 	auto articles_xml = load_articles_xml("articles.xml");
 	for(const auto& article_xml : articles_xml)
@@ -43,8 +42,7 @@ BOOST_AUTO_TEST_CASE(test_article_from_xml)
 
 BOOST_AUTO_TEST_CASE(test_articles_signatures)
 {
-	std::vector<std::pair<std::string, Signature>> docs_signatures;
-	ArticleBuilder article_builder(docs_signatures, 0.15);
+	ArticleBuilder article_builder(0.15);
 	vector<Article> articles;
 	auto articles_xml = load_articles_xml("articles.xml");
 	vector<size_t> articles_idxs;
@@ -78,7 +76,7 @@ BOOST_AUTO_TEST_CASE(test_articles_signatures)
 BOOST_AUTO_TEST_CASE(test_lsh_deduplication)
 {
 	std::vector<std::pair<std::string, Signature>> docs_signatures;
-	ArticleBuilder article_builder(docs_signatures, 0.15);
+	ArticleBuilder article_builder(0.15);
 	vector<Article> articles;
 	auto articles_xml = load_articles_xml("articles.xml");
 	vector<size_t> articles_idxs;

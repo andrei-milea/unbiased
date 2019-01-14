@@ -1,42 +1,49 @@
 #ifndef _MONGODB_H
 #define _MONGODB_H
 
-#include "vocabulary.h"
-#include "article.h"
 #include "config.h"
-
 #include <curl/curl.h>
 #include <unordered_set>
 #include <map>
 #include <vector>
 #include <string>
+#include <mongocxx/cursor.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/instance.hpp>
 #include <bsoncxx/builder/stream/document.hpp>
 
+using bson_doc_bld = bsoncxx::builder::stream::document;
+using bson_doc = bsoncxx::document::value;
+
 class MongoDb
 {
 public:
-	static MongoDb& get(const std::string& dbname = std::string())
+	MongoDb(const std::string& db_name = "")
+		:db_str_(db_name.empty() ? Config::get().mongo_credentials.dbname : db_name),
+		client_conn_(get_connection_uri()),
+		database_(client_conn_[db_str_])
 	{
-		static MongoDb instance{dbname};
-		return instance;
 	}
 
-	void save_article(const Article& article);
+	void save_doc(const std::string& collect_str, bson_doc doc);
+	
+	void update_doc(const std::string& collect_str, const bson_doc& doc,
+					 const std::string& key="", const std::string& value="");
 
-	void drop_collection(const std::string& dbname)
+	void drop_collection(const std::string& collect_str)
 	{
-		database_[dbname].drop();
+		database_[collect_str].drop();
 	}
 
-	std::vector<Article> load_articles(const std::string& key="", const std::string& value="")const;
+	mongocxx::cursor get_docs(const std::string& collect_str, const std::string& key="",
+								 const std::string& value="")const;
 
-	std::vector<std::pair<std::string, Signature>> load_articles_signatures()const;
+	mongocxx::cursor get_fields(const std::string& collect_str, std::vector<std::string> &fields)const;
 
-	std::vector<std::pair<std::string, std::string>> load_articles_dates(const std::vector<std::string> &articles_ids)const;
+	mongocxx::cursor get_fields(const std::string& collect_str, std::vector<std::string> &fields,
+								 const bson_doc_bld& filter)const;
 
-	uint64_t get_articles_no()const;
+	uint64_t get_docs_no(const std::string& collect_str)const;
 
 	MongoDb(const MongoDb&) = delete;
 	MongoDb(MongoDb&&) = delete;
@@ -44,13 +51,6 @@ public:
 	MongoDb& operator=(MongoDb &&) = delete;
 
 private:
-	MongoDb(const std::string& db_name)
-		:db_str_(db_name.empty() ? Config::get().mongo_credentials.dbname : db_name),
-		client_conn_(get_connection_uri()),
-		database_(client_conn_[db_str_])
-	{
-	}
-
 	mongocxx::uri get_connection_uri()const
 	{
 		return mongocxx::uri{"mongodb://" + Config::get().mongo_credentials.username  + ":" + url_encode(Config::get().mongo_credentials.password) + "@" + Config::get().mongo_credentials.server};
@@ -71,7 +71,6 @@ private:
 	mongocxx::instance inst_;
 	mongocxx::client client_conn_;
 	mongocxx::database database_;
-	bsoncxx::builder::stream::document bson_builder_;
 };
 
 #endif

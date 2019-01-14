@@ -13,7 +13,7 @@ using namespace std;
 BOOST_AUTO_TEST_CASE(test_lsa_svd)
 {
 	std::vector<std::pair<std::string, Signature>> docs_signatures;
-	ArticleBuilder article_builder{docs_signatures, /*0.17*/0.3};
+	ArticleBuilder article_builder{/*0.17*/0.3};
 	vector<Article> articles;
 	auto articles_xml = load_articles_xml("articles.xml");
 	for(const auto& article_xml : articles_xml)
@@ -28,15 +28,6 @@ BOOST_AUTO_TEST_CASE(test_lsa_svd)
 			//cout << "title: " << new_article.title << endl;
 	}
 
-	//save articles to mongodb
-	/*auto& mongo_inst = MongoDb::get("test_db");
-	mongo_inst.drop_collection("articles");
-	for(const auto& article : articles)
-		mongo_inst.save_article(article);
-
-	auto articles_no = mongo_inst.get_articles_no();
-	BOOST_REQUIRE_EQUAL(articles_no, articles.size());*/
-
 	cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
 	LSA lsa_processor{article_builder.get_vocabulary()};
 	lsa_processor.build_term_doc_matrix(articles, articles.size());
@@ -44,5 +35,4 @@ BOOST_AUTO_TEST_CASE(test_lsa_svd)
 	//lsa_processor.print_term_doc_matrix();
 	lsa_processor.print_top_concepts(0.09);
 }
-
 

@@ -4,17 +4,17 @@ LFLAGS = -L/usr/local/lib64 -lboost_system -lboost_filesystem -lboost_thread -lb
 GCC = g++
 EXE = ../../bin/tests/
 
-test_vocabulary: test_vocabulary.o porter2_stemmer.o
-	$(GCC) $(LFLAGS) porter2_stemmer.o test_vocabulary.o -o $(EXE)test_vocabulary
+test_vocabulary: test_vocabulary.o vocabulary.o porter2_stemmer.o
+	$(GCC) $(LFLAGS) porter2_stemmer.o vocabulary.o test_vocabulary.o -o $(EXE)test_vocabulary
 
-test_article_builder: test_article_builder.o porter2_stemmer.o mongodb.o murmur3.o
-	$(GCC) $(LFLAGS) porter2_stemmer.o mongodb.o murmur3.o test_article_builder.o -o $(EXE)test_article_builder
+test_article_builder: test_article_builder.o bson_builder.o article_builder.o vocabulary.o porter2_stemmer.o mongodb.o murmur3.o
+	$(GCC) $(LFLAGS) article_builder.o bson_builder.o porter2_stemmer.o mongodb.o vocabulary.o murmur3.o test_article_builder.o -o $(EXE)test_article_builder
 
-test_mongodb: test_mongodb.o mongodb.o murmur3.o porter2_stemmer.o
-	$(GCC) $(LFLAGS) murmur3.o porter2_stemmer.o mongodb.o test_mongodb.o -o $(EXE)test_mongodb
+test_mongodb: test_mongodb.o article_builder.o bson_builder.o mongodb.o vocabulary.o murmur3.o porter2_stemmer.o
+	$(GCC) $(LFLAGS) murmur3.o article_builder.o bson_builder.o vocabulary.o porter2_stemmer.o mongodb.o test_mongodb.o -o $(EXE)test_mongodb
 
-test_lsa: dlib.o test_lsa.o lsa.o mongodb.o murmur3.o porter2_stemmer.o
-	$(GCC) $(LFLAGS) dlib.o murmur3.o porter2_stemmer.o mongodb.o lsa.o test_lsa.o -o $(EXE)test_lsa
+test_lsa: dlib.o article_builder.o bson_builder.o test_lsa.o lsa.o mongodb.o vocabulary.o murmur3.o porter2_stemmer.o
+	$(GCC) $(LFLAGS) dlib.o article_builder.o bson_builder.o murmur3.o porter2_stemmer.o mongodb.o vocabulary.o lsa.o test_lsa.o -o $(EXE)test_lsa
 
 test_minhash: test_minhash.o murmur3.o
 	$(GCC) $(LFLAGS) murmur3.o test_minhash.o -o $(EXE)test_minhash
@@ -34,8 +34,17 @@ test_lsa.o: test_lsa.cpp ../utils/article_utils.h ../lsa.cpp ../lsa.h
 test_minhash.o: test_minhash.cpp ../minhash.h
 	$(GCC) $(CFLAGS) test_minhash.cpp -o test_minhash.o
 
+bson_builder.o: ../bson_builder.cpp ../bson_builder.h ../vocabulary.h ../article.h 
+	$(GCC) $(CFLAGS) ../bson_builder.cpp -o bson_builder.o
+
+article_builder.o: ../article_builder.cpp ../article_builder.h ../bson_builder.h ../vocabulary.h ../article.h 
+	$(GCC) $(CFLAGS) ../article_builder.cpp -o article_builder.o
+
 mongodb.o: ../mongodb.cpp ../mongodb.h ../article.h ../vocabulary.h
 	$(GCC) $(CFLAGS) ../mongodb.cpp -o mongodb.o
+
+vocabulary.o: ../vocabulary.cpp ../vocabulary.h ../article.h
+	$(GCC) $(CFLAGS) ../vocabulary.cpp -o vocabulary.o
 
 lsa.o: ../lsa.cpp ../lsa.h ../article.h ../vocabulary.h
 	$(GCC) $(CFLAGS) ../lsa.cpp -o lsa.o

@@ -6,10 +6,11 @@
 #include <vector>
 #include <array>
 #include <set>
+#include <unordered_map>
 
 const int SIGNATURE_SIZE = 100;
 const size_t MAX_WORDS_NO = 100000000;
-typedef std::array<uint32_t, SIGNATURE_SIZE> Signature;
+using Signature = std::array<uint32_t, SIGNATURE_SIZE>;
 
 struct Analytics
 {
@@ -46,11 +47,14 @@ public:
 	std::string date;
 	std::string source;
 	std::vector<std::string> authors;
+	std::vector<std::string> tokens;
 	size_t length;
 	size_t words_no;
 	size_t unknown_words_no;
 	Signature signature;
+	std::unordered_map<size_t, size_t> ids_tokens_map;
 	std::vector<double> tf;
+	std::set<uint32_t> shingles;
 	std::vector<std::string> keywords;
 	std::vector<std::string> entities;
 	std::set<std::string> duplicates;

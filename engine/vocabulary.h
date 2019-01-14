@@ -2,139 +2,65 @@
 #define _VOCABULARY_H
 
 #include "utils/tokenize.h"
+#include "article.h"
 #include <iostream>
 #include <string>
 #include <vector>
 #include <unordered_set>
-#include <map>
+#include <unordered_map>
 #include <atomic>
 #include <fstream>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/serialization/unordered_set.hpp>
-#include <boost/serialization/map.hpp>
-#include <boost/serialization/array.hpp>
-
-typedef uint32_t WordInt;
-
-template<typename Archive> 
-void serialize(Archive & ar, std::atomic<uint64_t> atom, unsigned version)
-{
-}
-
-// outside of any namespace
-BOOST_SERIALIZATION_SPLIT_FREE(std::atomic<uint64_t>)
-
-namespace boost { namespace serialization {
-	template<class Archive>
-	void save(Archive& ar, const std::atomic<uint64_t>& atom, unsigned int) {
-		ar << atom.load(); 
-	}
-	template<class Archive>
-	void load(Archive& ar, std::atomic<uint64_t>& atom, unsigned int) {
-		uint64_t val;
-		ar >> val; 
-		atom = val;
-	}
-}} // namespace boost::serialization
-
+class BsonBuilder;
 
 class Vocabulary
 {
 public:
-	Vocabulary()
-	:new_words_idx_(0)
-	{
-	}
+	Vocabulary(){};
+	Vocabulary(const std::string& words_filename, const std::string& stopwords_filename);
 
-	Vocabulary(const std::string& words_filename, const std::string& stopwords_filename)
-	:new_words_idx_(0)
-	{
-		std::ifstream words_file(words_filename);
-		std::ifstream stopwords_file(stopwords_filename);
-		if(!words_file.is_open())
-			throw std::runtime_error("Vocabulary::Vocabulary error: failed to open words file - " + words_filename);
-		if(!stopwords_file.is_open())
-			throw std::runtime_error("Vocabulary::Vocabulary error: failed to open words file - " + stopwords_filename);
-
-		std::string words_str, stopwords_str;
-		std::getline(words_file, words_str, '\n');
-		std::getline(stopwords_file, stopwords_str, '\n');
-
-		
-		std::set<std::string> words = tokenize_stem(words_str);
-		std::vector<std::string> stopwords = tokenize(stopwords_str);
-
-		for(const auto& stop_word : stopwords)
-			stop_words_.insert(stop_word);
-
-		size_t count = 0;
-		for(const auto& word :  words)
-		{
-			if(stop_words_.find(word) == stop_words_.end())
-			{
-				words_map_[word] = count;
-				words_freq_[count] = 0;
-				count++;
-			}
-		}
-
-	}
-
-	friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & words_map_;
-        ar & words_freq_;
-        ar & stop_words_;
-        ar & new_words_;
-    }
-
-	void add_new_word(const std::string& word)
-	{
-		if(new_words_idx_ < MAX_NEW_WORDS)
-		{
-			new_words_idx_++;
-			new_words_[new_words_idx_] = (word);
-		}
-		else
-			std::cout << "too many new words added\n";
-	}
-
-	//thread safe - atomic
-	void increase_word_freq(WordInt word_id)
+	void increase_word_freq(size_t word_id)
 	{
 		assert(word_id < words_freq_.size());
 		words_freq_[word_id]++;
+
 	}
 
-	uint64_t get_word_freq(WordInt word_id)const
+	//thread safe - atomic
+	void increase_words_freq(const std::set<size_t> &word_ids)
+	{
+		for(size_t word_id : word_ids)
+		{
+			assert(word_id < words_freq_.size());
+			words_freq_[word_id]++;
+		}
+	}
+
+	uint64_t get_word_freq(size_t word_id)const
 	{
 		assert(word_id < words_freq_.size());
 		return words_freq_[word_id];
 	}
 
-	bool get_word_id(const std::string& word, WordInt &id)const
+	void add_words_measures(Article& article)const;
+
+	bool get_word(size_t idx, std::string& word)const
 	{
-		auto it = words_map_.find(word);
-		if(it == words_map_.end())
+		if(idx >= words_.size())
 			return false;
-		id = it->second;
+		auto it = words_.begin();
+		std::advance(it, idx);
+		word = *it;
 		return true;
 	}
 
-	std::string get_word(WordInt id)const
+	bool get_word_id(const std::string& word, size_t &id)const
 	{
-		auto it = find_if(words_map_.begin() , words_map_.end(), 
-						[id](const std::pair<std::string, WordInt> & elem) -> bool
-							{ 
-								return elem.second == id;
-   							});
-		if(it == words_map_.end())
-			throw std::runtime_error("Vocabulary::get_word error: word_id not found - " + std::to_string(id));
-		return it->first;
+		auto it = words_.find(word);
+		if(it == words_.end())
+			return false;
+		id = std::distance(words_.begin(), it);
+		return true;
 	}
 
 	bool is_stop_word(const std::string& word)const
@@ -145,13 +71,8 @@ public:
 		return true;
 	}
 
-	//no other operations should take place while this method is called
-	void synchronize_dictionary()
-	{
-	}
-
 	size_t words_no()const
-	{	return words_map_.size();	}
+	{	return words_.size();	}
 
 	size_t stopwords_no()const
 	{	return stop_words_.size();	}
@@ -161,15 +82,44 @@ public:
 		return stop_words_;
 	}
 
+	const std::set<std::string>& get_words()const
+	{
+		return words_;
+	}
+
+	std::vector<uint64_t> get_words_freq()const
+	{
+		std::vector<uint64_t> res(words_freq_.begin(), words_freq_.end());
+		return res;
+	}
+
+private:
+	std::string get_stem(const std::string& token)const
+	{
+		std::string res = token;
+		Porter2Stemmer::trim(res);
+		Porter2Stemmer::stem(res);
+		return res;
+	}
+
+	//TODO fix 32-64bit combine
+	uint32_t get_shingle(const std::string& w1, const std::string& w2, const std::string& w3)const
+	{
+		std::hash<std::string> hash_fct{};
+        uint64_t hash_val = hash_fct(w1);
+        uint32_t hash_val1 = hash_fct(w2);
+        uint32_t hash_val2 = hash_fct(w3);
+        boost::hash_combine(hash_val, hash_val1);
+        boost::hash_combine(hash_val, hash_val2);
+		return (uint32_t)hash_val;
+	}
 
 private:
 	static constexpr size_t MAX_WORDS_NO = 300000;
-	static constexpr size_t MAX_NEW_WORDS = 100;
-	std::map<std::string, WordInt> words_map_;//TODO use boost bimap
+	std::set<std::string> words_;
 	std::array<std::atomic<uint64_t>, MAX_WORDS_NO> words_freq_;
 	std::unordered_set<std::string> stop_words_;
-	std::array<std::string, MAX_NEW_WORDS> new_words_;
-	std::atomic<size_t> new_words_idx_;
+	friend BsonBuilder;
 };
 
 

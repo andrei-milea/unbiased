@@ -67,7 +67,10 @@ public:
 			{
 				if(U_(row, col) > threshold)
 				{
-					std::cout << vocabulary_.get_word(terms_mat_to_vocab_[row]) << " ";
+					std::string word;
+					bool res = vocabulary_.get_word(terms_mat_to_vocab_[row], word);
+					assert(res);
+					std::cout << word << " ";
 				}
 			}
 			std::cout << "CONCEPT END\n";

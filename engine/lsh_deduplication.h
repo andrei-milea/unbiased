@@ -41,7 +41,6 @@ public:
 				duplicates.insert(lsh_buckets_[band_idx][hash_value].begin(), lsh_buckets_[band_idx][hash_value].end());
 
 			bucket_hashes.emplace_back(band_idx, hash_value);
-
 		}
 
 		std::lock_guard<std::mutex> lck(mtx_);

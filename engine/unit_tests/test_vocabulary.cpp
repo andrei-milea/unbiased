@@ -10,7 +10,6 @@ using namespace std;
 
 const string words_filename("words.dat");
 const string stopwords_filename("stop_words.dat");
-const string vocab_path = Config::get().vocabulary_path + "_test";
 
 /*BOOST_AUTO_TEST_CASE(test_stemmer)
 {
@@ -28,25 +27,11 @@ const string vocab_path = Config::get().vocabulary_path + "_test";
 	}
 }*/
 
-
 BOOST_AUTO_TEST_CASE(test_save_load)
 {
 	Vocabulary vocab{words_filename, stopwords_filename};
 	BOOST_REQUIRE(vocab.words_no() == 152588);
 	BOOST_REQUIRE(vocab.stopwords_no() == 153);
-
-	//save vocab
-	{
-		std::ofstream ofs{vocab_path};
-		boost::archive::text_oarchive oarchive{ofs};
-		oarchive << vocab;
-	}
-
-	Vocabulary saved_vocab;
-	std::ifstream ifs{vocab_path};
-	boost::archive::text_iarchive iarchive{ifs};
-	iarchive >> saved_vocab;
-	BOOST_REQUIRE(saved_vocab.words_no() == vocab.words_no());
 }
 
 BOOST_AUTO_TEST_CASE(test_stop_words)
@@ -56,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_stop_words)
 	BOOST_REQUIRE(vocab.stopwords_no() == 153);
 	BOOST_REQUIRE(vocab.is_stop_word("to"));
 	const auto& stop_words = vocab.get_stop_words();
-	WordInt word_id = 0;
+	size_t word_id = 0;
 	for(const auto& stop_word : stop_words)
 		BOOST_REQUIRE(false == vocab.get_word_id(stop_word, word_id));
 }
@@ -67,7 +52,7 @@ BOOST_AUTO_TEST_CASE(test_word_freq)
 	BOOST_REQUIRE(vocab.words_no() == 152588);
 	BOOST_REQUIRE(vocab.stopwords_no() == 153);
 
-	WordInt id1 = 0, id2 = 0, id3 = 0;
+	size_t id1 = 0, id2 = 0, id3 = 0;
    	bool res = vocab.get_word_id("tabl", id1);
 	BOOST_REQUIRE(res);
 	vocab.increase_word_freq(id1);

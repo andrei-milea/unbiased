@@ -1,7 +1,6 @@
 #ifndef _ENTRY_PROCESSOR_H
 #define _ENTRY_PROCESSOR_H
 
-#include "mongodb.h"
 #include "vocabulary.h"
 #include "article.h"
 #include "article_builder.h"
@@ -17,7 +16,6 @@ class EntryProcessor
 public:
 	EntryProcessor(size_t buff_max_size)
 		:buffer_max_size_(buff_max_size),
-		article_builder_(MongoDb::get().load_articles_signatures()),
 		processed_articles_(0)
 	{
 	}
@@ -31,7 +29,7 @@ public:
 		}
 	}
 
-	//enqueues build_article
+	//enqueues process_article
 	void scrap_and_process(const std::string& url)
 	{
 		std::string buffer_str('\0', buffer_max_size_);
@@ -41,7 +39,7 @@ public:
 		auto get_res = [this, &buffer_str](const boost::system::error_code &ec, std::size_t size)
 					{
 						if(!ec)
-							build_article(buffer_str);
+							process_article(buffer_str);
 						else
 							std::cout << ec.message() << std::endl;
 					};
@@ -50,12 +48,12 @@ public:
 		{
 			//wait for all articles to be processed
 			processed_articles_ = 0;
-			article_builder_.save_vocabulary();
+			article_builder_.update_vocab_freq();
 		}
 	}
 
 private:
-	void build_article(const std::string& entry_str)
+	void process_article(const std::string& entry_str)
 	{
 		try
 		{
@@ -63,7 +61,7 @@ private:
 			BuilderRes result = article_builder_.from_xml(entry_str, article);
 			if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
 			{
-				MongoDb::get().save_article(article);
+				article_builder_.save_article(article);
 				processed_articles_++;
 			}
 		}
@@ -73,11 +71,11 @@ private:
 		}
 	}
 
-	std::string find_source(const std::set<std::string> &duplicates) 
+	/*std::string find_source(const std::set<std::string> &duplicates) 
 	{
 		assert(!duplicates.empty());
 		std::vector<std::string> duplicates_vec(duplicates.begin(), duplicates.end());
-		auto articles_dates = MongoDb::get().load_articles_dates(duplicates_vec);
+		auto articles_dates = article_builder_.load_articles_dates(duplicates_vec);
 		if((articles_dates.size() == duplicates.size()))
 			throw std::logic_error("ArticleBuilder::find_source error: failed to retrieve all articles with given ids");
 		size_t min_date_idx = 0;
@@ -87,7 +85,7 @@ private:
 				min_date_idx = idx;
 		}
 		return articles_dates[min_date_idx].first;
-	}
+	}*/
 
 private:
 	boost::asio::io_service asio_service_;

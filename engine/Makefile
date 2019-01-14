@@ -5,14 +5,23 @@ LFLAGS = -L/usr/local/lib64 -lboost_system -lboost_filesystem -lboost_thread -lb
 GCC = g++
 EXE = ../bin/
 
-engine: engine.o murmur3.o mongodb.o porter2_stemmer.o dlib.o lsa.o
-	$(GCC) $(LFLAGS) porter2_stemmer.o murmur3.o mongodb.o engine.o dlib.o lsa.o -o $(EXE)engine_main
+engine: engine.o vocabulary.o murmur3.o mongodb.o porter2_stemmer.o bson_builder.o article_builder.o dlib.o lsa.o
+	$(GCC) $(LFLAGS) vocabulary.o porter2_stemmer.o murmur3.o mongodb.o engine.o bson_builder.o article_builder.o dlib.o lsa.o -o $(EXE)engine_main
 
 engine.o: engine.cpp config.h pqldb.h thread_pool.h entry_processor.h
 	$(GCC) $(CFLAGS) engine.cpp -o engine.o
 
 lsa.o: lsa.cpp lsa.h article.h vocabulary.h
 	$(GCC) $(CFLAGS) lsa.cpp -o lsa.o
+
+vocabulary.o: vocabulary.cpp vocabulary.h article.h 
+	$(GCC) $(CFLAGS) vocabulary.cpp -o vocabulary.o
+
+article_builder.o: article_builder.cpp article_builder.h bson_builder.h bson_builder.cpp vocabulary.h article.h 
+	$(GCC) $(CFLAGS) article_builder.cpp -o article_builder.o
+
+bson_builder.o: bson_builder.cpp bson_builder.h vocabulary.h article.h
+	$(GCC) $(CFLAGS) bson_builder.cpp -o bson_builder.o
 
 mongodb.o: mongodb.cpp mongodb.h article.h vocabulary.h
 	$(GCC) $(CFLAGS) mongodb.cpp -o mongodb.o
