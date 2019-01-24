@@ -5,11 +5,17 @@ LFLAGS = -L/usr/local/lib64 -lboost_system -lboost_filesystem -lboost_thread -lb
 GCC = g++
 EXE = ../bin/
 
-engine: engine.o vocabulary.o murmur3.o mongodb.o porter2_stemmer.o bson_builder.o article_builder.o dlib.o lsa.o
-	$(GCC) $(LFLAGS) vocabulary.o porter2_stemmer.o murmur3.o mongodb.o engine.o bson_builder.o article_builder.o dlib.o lsa.o -o $(EXE)engine_main
+engine: engine.o vocabulary.o entry_processor.o bu_clustering.o murmur3.o mongodb.o porter2_stemmer.o bson_builder.o article_builder.o dlib.o lsa.o
+	$(GCC) $(LFLAGS) vocabulary.o entry_processor.o bu_clustering.o porter2_stemmer.o murmur3.o mongodb.o engine.o bson_builder.o article_builder.o dlib.o lsa.o -o $(EXE)engine_main
 
-engine.o: engine.cpp config.h pqldb.h thread_pool.h entry_processor.h
+engine.o: engine.cpp config.h pqldb.h entry_processor.h
 	$(GCC) $(CFLAGS) engine.cpp -o engine.o
+
+entry_processor.o: entry_processor.cpp entry_processor.h article.h article_builder.h vocabulary.h
+	$(GCC) $(CFLAGS) entry_processor.cpp -o entry_processor.o
+
+bu_clustering.o: bu_clustering.cpp clustering.h lsa.h vocabulary.h
+	$(GCC) $(CFLAGS) bu_clustering.cpp -o bu_clustering.o
 
 lsa.o: lsa.cpp lsa.h article.h vocabulary.h
 	$(GCC) $(CFLAGS) lsa.cpp -o lsa.o

@@ -13,6 +13,9 @@ test_article_builder: test_article_builder.o bson_builder.o article_builder.o vo
 test_mongodb: test_mongodb.o article_builder.o bson_builder.o mongodb.o vocabulary.o murmur3.o porter2_stemmer.o
 	$(GCC) $(LFLAGS) murmur3.o article_builder.o bson_builder.o vocabulary.o porter2_stemmer.o mongodb.o test_mongodb.o -o $(EXE)test_mongodb
 
+test_bu_clustering: bu_clustering.o dlib.o article_builder.o bson_builder.o mongodb.o test_bu_clustering.o lsa.o vocabulary.o murmur3.o porter2_stemmer.o
+	$(GCC) $(LFLAGS) bu_clustering.o dlib.o article_builder.o bson_builder.o mongodb.o murmur3.o porter2_stemmer.o vocabulary.o lsa.o test_bu_clustering.o -o $(EXE)test_bu_clustering
+
 test_lsa: dlib.o article_builder.o bson_builder.o test_lsa.o lsa.o mongodb.o vocabulary.o murmur3.o porter2_stemmer.o
 	$(GCC) $(LFLAGS) dlib.o article_builder.o bson_builder.o murmur3.o porter2_stemmer.o mongodb.o vocabulary.o lsa.o test_lsa.o -o $(EXE)test_lsa
 
@@ -27,6 +30,9 @@ test_article_builder.o: test_article_builder.cpp ../article_builder.h ../lsh_ded
 
 test_mongodb.o: test_mongodb.cpp ../utils/article_utils.h
 	$(GCC) $(CFLAGS) test_mongodb.cpp -o test_mongodb.o
+
+test_bu_clustering.o: test_bu_clustering.cpp ../bu_clustering.h ../bu_clustering.cpp
+	$(GCC) $(CFLAGS) test_bu_clustering.cpp -o test_bu_clustering.o
 
 test_lsa.o: test_lsa.cpp ../utils/article_utils.h ../lsa.cpp ../lsa.h
 	$(GCC) $(CFLAGS) test_lsa.cpp -o test_lsa.o
@@ -45,6 +51,9 @@ mongodb.o: ../mongodb.cpp ../mongodb.h ../article.h ../vocabulary.h
 
 vocabulary.o: ../vocabulary.cpp ../vocabulary.h ../article.h
 	$(GCC) $(CFLAGS) ../vocabulary.cpp -o vocabulary.o
+
+bu_clustering.o: ../bu_clustering.cpp ../clustering.h ../lsa.h ../vocabulary.h
+	$(GCC) $(CFLAGS) ../bu_clustering.cpp -o bu_clustering.o
 
 lsa.o: ../lsa.cpp ../lsa.h ../article.h ../vocabulary.h
 	$(GCC) $(CFLAGS) ../lsa.cpp -o lsa.o

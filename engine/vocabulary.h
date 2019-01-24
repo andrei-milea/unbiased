@@ -19,7 +19,7 @@ public:
 	Vocabulary(){};
 	Vocabulary(const std::string& words_filename, const std::string& stopwords_filename);
 
-	void increase_word_freq(size_t word_id)
+	void increase_word_freq(size_t word_id)noexcept
 	{
 		assert(word_id < words_freq_.size());
 		words_freq_[word_id]++;
@@ -27,7 +27,7 @@ public:
 	}
 
 	//thread safe - atomic
-	void increase_words_freq(const std::set<size_t> &word_ids)
+	void increase_words_freq(const std::set<size_t> &word_ids)noexcept
 	{
 		for(size_t word_id : word_ids)
 		{
@@ -44,7 +44,7 @@ public:
 
 	void add_words_measures(Article& article)const;
 
-	bool get_word(size_t idx, std::string& word)const
+	bool get_word(size_t idx, std::string& word)const noexcept
 	{
 		if(idx >= words_.size())
 			return false;
@@ -54,7 +54,7 @@ public:
 		return true;
 	}
 
-	bool get_word_id(const std::string& word, size_t &id)const
+	bool get_word_id(const std::string& word, size_t &id)const noexcept
 	{
 		auto it = words_.find(word);
 		if(it == words_.end())
@@ -63,7 +63,7 @@ public:
 		return true;
 	}
 
-	bool is_stop_word(const std::string& word)const
+	bool is_stop_word(const std::string& word)const noexcept
 	{
 		auto it = stop_words_.find(word);
 		if(it == stop_words_.end())
@@ -71,18 +71,18 @@ public:
 		return true;
 	}
 
-	size_t words_no()const
+	size_t words_no()const noexcept
 	{	return words_.size();	}
 
-	size_t stopwords_no()const
+	size_t stopwords_no()const noexcept
 	{	return stop_words_.size();	}
 
-	const std::unordered_set<std::string>& get_stop_words()const
+	const std::unordered_set<std::string>& get_stop_words()const noexcept
 	{
 		return stop_words_;
 	}
 
-	const std::set<std::string>& get_words()const
+	const std::set<std::string>& get_words()const noexcept
 	{
 		return words_;
 	}

@@ -2,8 +2,8 @@
 #define _ENGINE_H
 
 #include "config.h"
-#include "thread_pool.h"
 #include "entry_processor.h"
+#include "bu_clustering.h"
 
 class Engine
 {
@@ -12,7 +12,7 @@ public:
 		:entry_processor_(Config::get().scrapper_buff_size)
 	{}
 
-	EntryProcessor& get_processor()
+	EntryProcessor& get_processor()noexcept
 	{
 		return entry_processor_;
 	}

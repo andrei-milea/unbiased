@@ -27,7 +27,7 @@ public:
 	unknown_words_no(0)
 	{}
 
-	bool operator==(const Article& article)const
+	bool operator==(const Article& article)const noexcept
 	{
 		return /*id == article.id &&*/ url == article.url && title == article.title && source == article.source 
 						&& authors == article.authors && length == article.length && words_no == article.words_no && signature == article.signature

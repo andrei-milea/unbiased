@@ -55,7 +55,7 @@ void Vocabulary::add_words_measures(Article& article)const
 				article.tf[word_id]++;
 				article.ids_tokens_map[word_id] = tidx;
 			}
-			else if(false/* == vocabulary_.is_misspelling(article.tokens[tidx])*/)
+			else if(false/* == is_misspelling(article.tokens[tidx])*/)
 			{
 				//deal with misspelings
 			}

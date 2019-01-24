@@ -39,7 +39,7 @@ public:
 
 	void update_vocab_freq()const;
 
-	const Vocabulary& get_vocabulary()const
+	const Vocabulary& get_vocabulary()const noexcept
 	{
 		return vocabulary_;
 	}
