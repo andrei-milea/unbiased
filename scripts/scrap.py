@@ -2,7 +2,7 @@ import newspaper
 from newspaper import Article
 import random
 from nltk_utils import get_vocabulary
-from process_urls import xml_str
+from article import to_xml
 import gc
 
 def crawl_website(url):
@@ -41,7 +41,7 @@ def download_articles_sample(srcs_filename):
 
     articles_outfile = open("articles.xml", 'w')
     for article in articles:
-        article_xml = xml_str(article)
+        article_xml = to_xml(article)
         articles_outfile.write(article_xml + "\n\n")
 
 def get_articles_urls(srcs_filename):

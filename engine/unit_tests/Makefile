@@ -1,4 +1,4 @@
-all: test_vocabulary test_article_builder test_mongodb test_minhash test_lsa
+all: test_vocabulary test_article_builder test_mongodb test_minhash test_lsa test_bu_clustering
 CFLAGS = -std=c++14 -c -g -Wall -DDLIB_NO_GUI_SUPPORT -I /usr/include/boost -I /usr/local/include/mongocxx/v_noabi -I /usr/local/include/bsoncxx/v_noabi -I ../utils/dlib
 LFLAGS = -L/usr/local/lib64 -lboost_system -lboost_filesystem -lboost_thread -lboost_serialization -lboost_date_time -lboost_locale -lpqxx -lmongocxx -lbsoncxx -lcurl -llapack -lpthread
 GCC = g++
@@ -83,4 +83,4 @@ dlib.o: ../utils/dlib/dlib/all/source.cpp
 
 
 clean:
-	rm -rf *.o $(EXE)test_vocabulary $(EXE)test_article_builder $(EXE)test_mongodb $(EXE)test_minhash $(EXE)test_lsa
+	rm -rf *.o $(EXE)test_vocabulary $(EXE)test_article_builder $(EXE)test_mongodb $(EXE)test_minhash $(EXE)test_lsa $(EXE)test_bu_clustering

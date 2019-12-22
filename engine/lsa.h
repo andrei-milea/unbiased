@@ -32,7 +32,31 @@ public:
 		return V_;
 	}
 
-	void print_top_concepts(const std::vector<Article> &articles, double threshold = 0.03);
+	//threshold is 2 standard deviations from the mean
+	double get_terms_threshold(size_t concepts_no)const
+	{
+		assert(concepts_no <= U_.nc());
+		const dlib::matrix<double> mat = dlib::subm(U_, 0, U_.nr(), 0, concepts_no);
+		double m = dlib::mean(mat);
+		double sd = dlib::stddev(mat);
+		std::cout << "mean: " << m << "\n";
+		std::cout << "stddev: " << sd << "\n";
+		return  m + 2 * sd;
+	}
+
+	std::string get_word(size_t word_id)const
+	{
+		std::string keyword;
+		bool res = vocabulary_.get_word(word_id, keyword);
+		assert(res);
+		return keyword;
+	}
+
+	std::vector<std::set<size_t>> get_docs_keywords(float doc_threshold, float term_threshold, size_t concepts_no)const;
+
+	dlib::matrix<double> foldin_doc(const Article& art, size_t concepts_no)const;
+
+	void print_top_concepts(const std::vector<Article> &articles, double threshold = 0.03)const;
 
 private:
 	void build_term_doc_matrix(const std::vector<Article> &articles, size_t all_articles_no);
@@ -70,6 +94,7 @@ private:
 	dlib::matrix<double> 	U_;
 	dlib::matrix<double> 	sigma_;
 	dlib::matrix<double> 	V_;
+	double 					articles_no_;
 };
 
 

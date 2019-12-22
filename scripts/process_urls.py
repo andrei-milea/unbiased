@@ -1,22 +1,6 @@
 import sys
 from newspaper import Article
-
-def xml_str(article):
-    result = "<article>"
-    result += "<url>" + article.url + "</url>"
-    if article.publish_date:
-        date = article.publish_date.strftime("%Y-%m-%d %H:%M:%S")
-    else:
-        date = ""
-    result += "<date>" + date + "</date>"
-    result += "<title>" + article.title + "</title>"
-    result += "<authors>"
-    for author in article.authors:
-        result += "<author>" + author + "</author>"
-    result += "</authors>"
-    result += "<text>" + article.text + "</text>"
-    result += "</article>"
-    return result
+from articles import article_data
 
 def main():
     try:
@@ -25,7 +9,7 @@ def main():
         article = Article(params[0])
         article.download()
         article.parse()
-        print(xml_str(article))
+        print(to_xml(article))
     except Exception as exp:
         print('caught error: ' + repr(exp))
 

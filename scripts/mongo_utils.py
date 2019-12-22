@@ -40,6 +40,14 @@ class MongoUtils:
         term_doc_mat = numpy.reshape(term_doc_mat_array, shape)
         return term_doc_mat
 
+    def load_vocabulary(self):
+        collection = self.db['vocabulary']
+        words = collection.find_one()['words']
+        if None == words:
+            raise Exception('no vocabulary words found in database')
+        return words
+
+
     def clear_db(self):
         collection = self.db['term_doc_matrix']
         collection.drop()
