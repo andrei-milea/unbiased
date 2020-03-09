@@ -5,17 +5,17 @@ using namespace std;
 namespace bp = boost::process;
 
 EntryProcessor::EntryProcessor(size_t buff_max_size)
-	:buffer_max_size_(buff_max_size),
-	processed_articles_(0),
-	cluster_proc_(make_unique<BU_Clustering>(article_builder_.get_vocabulary()))
+    : buffer_max_size_(buff_max_size)
+    , processed_articles_(0)
+    , cluster_proc_(make_unique<BU_Clustering>(article_builder_.get_vocabulary()))
 {
 }
 
 void EntryProcessor::init()
 {
-	//compute term doc matrix
-	//with available data
-	/*const string articles_path("articles.xml");
+    //compute term doc matrix
+    //with available data
+    /*const string articles_path("articles.xml");
 	std::vector<std::pair<std::string, Signature>> docs_signatures;
 	ArticleBuilder article_builder(docs_signatures, 0.17);
 	vector<Article> articles;
@@ -46,51 +46,49 @@ void EntryProcessor::init()
 
 void EntryProcessor::run(uint32_t threads_no)
 {
-	for(size_t idx = 0; idx < threads_no; idx++)
-	{
-		thread new_thread([&]{asio_service_.run();}  );
-		new_thread.detach();
-	}
+    for (size_t idx = 0; idx < threads_no; idx++)
+    {
+        thread new_thread([&] { asio_service_.run(); });
+        new_thread.detach();
+    }
 }
 
 //enqueues process_article
 void EntryProcessor::scrap_and_process(const std::string& url)
 {
-	string buffer_str('\0', buffer_max_size_);
-	bp::async_pipe apipe(asio_service_);
-	bp::child c(bp::search_path("python"), std::string("scrap.py ") + url, bp::std_out > apipe);
+    string buffer_str('\0', buffer_max_size_);
+    bp::async_pipe apipe(asio_service_);
+    bp::child c(bp::search_path("python"), std::string("scrap.py ") + url, bp::std_out > apipe);
 
-	auto get_res = [this, &buffer_str](const boost::system::error_code &ec, std::size_t size)
-				{
-					if(!ec)
-						process_article(buffer_str);
-					else
-						std::cout << ec.message() << std::endl;
-				};
-	boost::asio::async_read(apipe, boost::asio::buffer(&buffer_str[0], buffer_str.size()), get_res);
-	if(processed_articles_ > Config::get().update_vocab_freq)
-	{
-		//wait for all articles to be processed
-		processed_articles_ = 0;
-		article_builder_.update_vocab_freq();
-	}
+    auto get_res = [this, &buffer_str](const boost::system::error_code& ec, std::size_t size) {
+        if (!ec)
+            process_article(buffer_str);
+        else
+            std::cout << ec.message() << std::endl;
+    };
+    boost::asio::async_read(apipe, boost::asio::buffer(&buffer_str[0], buffer_str.size()), get_res);
+    if (processed_articles_ > Config::get().update_vocab_freq)
+    {
+        //wait for all articles to be processed
+        processed_articles_ = 0;
+        article_builder_.update_vocab_freq();
+    }
 }
 
 void EntryProcessor::process_article(const string& entry_str) noexcept
 {
-	try
-	{
-		Article article;
-		BuilderRes result = article_builder_.from_xml(entry_str, article);
-		if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
-		{
-			article_builder_.save_article(article);
-			processed_articles_++;
-		}
-	}
-	catch(exception& ex)
-	{
-		cout << "error processing article: " << ex.what() << endl;
-	}
+    try
+    {
+        Article article;
+        BuilderRes result = article_builder_.from_xml(entry_str, article);
+        if (result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
+        {
+            article_builder_.save_article(article);
+            processed_articles_++;
+        }
+    }
+    catch (exception& ex)
+    {
+        cout << "error processing article: " << ex.what() << endl;
+    }
 }
-

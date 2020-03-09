@@ -1,12 +1,12 @@
 #define BOOST_TEST_MODULE "test_mongodb"
 #define protected public
 
-#include "../mongodb.h"
 #include "../config.h"
+#include "../mongodb.h"
 #include "../utils/article_utils.h"
-#include <vector>
-#include <chrono>
 #include "boost/test/included/unit_test.hpp"
+#include <chrono>
+#include <vector>
 
 using namespace boost::unit_test;
 using namespace std;
@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(test_vocabulary_db)
     //run this first time
     auto& mongo_inst = ArticleBuilder::db_inst_;
     mongo_inst.drop_collection("vocabulary");
-    Vocabulary vocab{words_filename, stopwords_filename};
+    Vocabulary vocab { words_filename, stopwords_filename };
     BsonBuilder bson_bld;
     auto doc = bson_bld.to_bson(vocab);
     ArticleBuilder::db_inst_.save_doc("vocabulary", doc);
@@ -53,11 +53,11 @@ BOOST_AUTO_TEST_CASE(test_save_articles)
     cout << "building articles: " << articles_xml.size() << endl;
     start = std::chrono::high_resolution_clock::now();
     std::set<Signature> signatures;
-    for(const auto& article_xml : articles_xml)
+    for (const auto& article_xml : articles_xml)
     {
         Article new_article;
         auto result = article_builder.from_xml(article_xml, new_article);
-        if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
+        if (result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
         {
             articles.push_back(new_article);
             signatures.insert(new_article.signature);
@@ -67,11 +67,11 @@ BOOST_AUTO_TEST_CASE(test_save_articles)
     elapsed = finish - start;
     cout << "elapsed time: " << elapsed.count() << "s" << endl;
 
-    for(size_t idx = 0; idx < init_vocab.words_no(); idx++)
-        BOOST_REQUIRE(init_vocab.get_word_freq(idx)  <= article_builder.get_vocabulary().get_word_freq(idx));
+    for (size_t idx = 0; idx < init_vocab.words_no(); idx++)
+        BOOST_REQUIRE(init_vocab.get_word_freq(idx) <= article_builder.get_vocabulary().get_word_freq(idx));
 
     mongo_inst.drop_collection("articles");
-    for(const auto& article : articles)
+    for (const auto& article : articles)
     {
         auto doc = bson_bld.to_bson(article);
         mongo_inst.save_doc("articles", doc);
@@ -82,12 +82,11 @@ BOOST_AUTO_TEST_CASE(test_save_articles)
 
     ArticleBuilder art_bld;
     auto articles_signatures = art_bld.load_articles_signatures();
-    for(const auto& article_signature : articles_signatures)
+    for (const auto& article_signature : articles_signatures)
     {
         auto it = signatures.find(article_signature.second);
         BOOST_REQUIRE(it != signatures.end());
     }
-
 
     auto articles_db = art_bld.load_articles();
     BOOST_REQUIRE(articles_db == articles);
@@ -102,11 +101,11 @@ BOOST_AUTO_TEST_CASE(test_articles_duplicates)
     vector<Article> articles;
     auto articles_xml = load_articles_xml("articles.xml");
     vector<size_t> articles_idxs;
-    for(const auto& article_xml : articles_xml)
+    for (const auto& article_xml : articles_xml)
     {
         Article new_article;
         auto result = article_builder.from_xml(article_xml, new_article);
-        if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
+        if (result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
         {
             articles.push_back(new_article);
             docs_signatures.push_back(make_pair(new_article.title, new_article.signature));
@@ -116,7 +115,7 @@ BOOST_AUTO_TEST_CASE(test_articles_duplicates)
     auto& mongo_inst = ArticleBuilder::db_inst_;
     mongo_inst.drop_collection("articles");
     BsonBuilder bson_bld;
-    for(const auto& article : articles)
+    for (const auto& article : articles)
     {
         auto doc = bson_bld.to_bson(article);
         mongo_inst.save_doc("articles", doc);
@@ -124,15 +123,14 @@ BOOST_AUTO_TEST_CASE(test_articles_duplicates)
 
     auto articles_signatures = article_builder.load_articles_signatures();
     ArticleBuilder new_builder(0.15);
-    for(const auto& article_xml : articles_xml)
+    for (const auto& article_xml : articles_xml)
     {
         Article new_article;
         auto result = new_builder.from_xml(article_xml, new_article);
         BOOST_REQUIRE(result == BuilderRes::DUPLICATE || result == BuilderRes::INVALID_WORDS);
-        if(result == BuilderRes::DUPLICATE)
+        if (result == BuilderRes::DUPLICATE)
             BOOST_REQUIRE(new_article.duplicates.size() != 1);
     }
 
     mongo_inst.drop_collection("articles");
 }
-

@@ -2,8 +2,8 @@
 #define _NER_EXTRACTOR_H
 
 #include <string>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 namespace ner
 {
@@ -24,18 +24,17 @@ struct EntityInfo
 class NERExtractor
 {
 public:
-	NERExtractor(const std::unordered_map<std::string, EntityInfo> &entities_map)
-	:entities_map_(entities_map)
-	{
-	}
+    NERExtractor(const std::unordered_map<std::string, EntityInfo>& entities_map)
+        : entities_map_(entities_map)
+    {
+    }
 
-	std::vector<std::string> find_entities(const std::string& text)const;
+    std::vector<std::string> find_entities(const std::string& text) const;
 
 private:
-	std::unordered_map<std::string, EntityInfo> entities_map_;	
+    std::unordered_map<std::string, EntityInfo> entities_map_;
 };
 
 }
 
 #endif
-

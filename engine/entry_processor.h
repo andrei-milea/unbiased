@@ -1,9 +1,9 @@
 #ifndef _ENTRY_PROCESSOR_H
 #define _ENTRY_PROCESSOR_H
 
-#include "vocabulary.h"
 #include "article.h"
 #include "article_builder.h"
+#include "vocabulary.h"
 #include <boost/asio.hpp>
 #include <boost/process.hpp>
 #include <map>
@@ -14,20 +14,20 @@ class Clustering;
 class EntryProcessor
 {
 public:
-	explicit EntryProcessor(size_t buff_max_size);
+    explicit EntryProcessor(size_t buff_max_size);
 
-	void init();
+    void init();
 
-	//start threads
-	void run(uint32_t threads_no);
+    //start threads
+    void run(uint32_t threads_no);
 
-	//enqueues process_article
-	void scrap_and_process(const std::string& url);
+    //enqueues process_article
+    void scrap_and_process(const std::string& url);
 
 private:
-	void process_article(const std::string& entry_str) noexcept;
+    void process_article(const std::string& entry_str) noexcept;
 
-	/*std::string find_source(const std::set<std::string> &duplicates) 
+    /*std::string find_source(const std::set<std::string> &duplicates) 
 	{
 		assert(!duplicates.empty());
 		std::vector<std::string> duplicates_vec(duplicates.begin(), duplicates.end());
@@ -44,12 +44,11 @@ private:
 	}*/
 
 private:
-	boost::asio::io_service asio_service_;
-	size_t buffer_max_size_;
-	ArticleBuilder article_builder_;
-	mutable std::atomic<size_t> processed_articles_;
-	std::unique_ptr<Clustering> cluster_proc_;
+    boost::asio::io_service asio_service_;
+    size_t buffer_max_size_;
+    ArticleBuilder article_builder_;
+    mutable std::atomic<size_t> processed_articles_;
+    std::unique_ptr<Clustering> cluster_proc_;
 };
 
 #endif
-

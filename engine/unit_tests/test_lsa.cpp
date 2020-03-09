@@ -1,9 +1,9 @@
 #define BOOST_TEST_MODULE "test_lsa"
 
+#include "../config.h"
+#include "../lsa.h"
 #include "../mongodb.h"
 #include "../utils/article_utils.h"
-#include "../lsa.h"
-#include "../config.h"
 
 #include "boost/test/included/unit_test.hpp"
 #include <chrono>
@@ -13,34 +13,32 @@ using namespace boost::unit_test;
 using namespace boost;
 using namespace std;
 
-
 BOOST_AUTO_TEST_CASE(test_lsa_svd)
 {
-	ArticleBuilder article_builder{/*0.17*/0.3};
-	vector<Article> articles;
-	auto articles_xml = load_articles_xml("articles.xml");
-	auto start = std::chrono::high_resolution_clock::now();
-	for(const auto& article_xml : articles_xml)
-	{
-		Article new_article;
-		auto result = article_builder.from_xml(article_xml, new_article);
-		if(result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
-		{
-			articles.push_back(new_article);
-		}
-		//else
-			//cout << "title: " << new_article.title << endl;
-	}
-	auto finish = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish - start;
-	cout << "build articles elapsed time: " << elapsed.count() << "s" << endl;
+    ArticleBuilder article_builder { /*0.17*/ 0.3 };
+    vector<Article> articles;
+    auto articles_xml = load_articles_xml("articles.xml");
+    auto start = std::chrono::high_resolution_clock::now();
+    for (const auto& article_xml : articles_xml)
+    {
+        Article new_article;
+        auto result = article_builder.from_xml(article_xml, new_article);
+        if (result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
+        {
+            articles.push_back(new_article);
+        }
+        //else
+        //cout << "title: " << new_article.title << endl;
+    }
+    auto finish = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = finish - start;
+    cout << "build articles elapsed time: " << elapsed.count() << "s" << endl;
 
-	cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
-	LSA lsa_processor{article_builder.get_vocabulary()};
-	lsa_processor.run_svd(articles, articles.size(), 20);
-	//lsa_processor.print_term_doc_matrix();
-	//lsa_processor.print_sigma();
-	//cout << "\n\n\n";
-	//lsa_processor.print_top_concepts(articles, 0.12);
+    cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
+    LSA lsa_processor { article_builder.get_vocabulary() };
+    lsa_processor.run_svd(articles, articles.size(), 20);
+    //lsa_processor.print_term_doc_matrix();
+    //lsa_processor.print_sigma();
+    //cout << "\n\n\n";
+    //lsa_processor.print_top_concepts(articles, 0.12);
 }
-

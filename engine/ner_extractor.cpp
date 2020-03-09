@@ -3,9 +3,8 @@
 namespace ner
 {
 
-vector<string> NERExtractor::find_entities(const std::string& text)const
+vector<string> NERExtractor::find_entities(const std::string& text) const
 {
-
 }
 
 }
