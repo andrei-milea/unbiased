@@ -1,7 +1,7 @@
 all: engine
-CFLAGS = -std=c++14 -c -g -Wall -DDLIB_NO_GUI_SUPPORT -I /usr/include/boost -I /usr/local/include/mongocxx/v_noabi -I /usr/local/include/bsoncxx/v_noabi -I utils/dlib
+CFLAGS = -Wno-sign-compare -std=c++14 -c -g -Wall -DDLIB_NO_GUI_SUPPORT -I /usr/include/boost -I /usr/local/include/mongocxx/v_noabi -I /usr/local/include/bsoncxx/v_noabi -I utils/dlib
 
-LFLAGS = -L/usr/local/lib64 -lboost_system -lboost_filesystem -lboost_thread -lboost_date_time -lboost_serialization -lboost_locale -lpqxx -lmongocxx -lbsoncxx -lcurl -lpthread -llapack -lqpidmessaging -lqpidtypes
+LFLAGS = -L/usr/local/lib64 -lboost_system -lboost_filesystem -lboost_thread -lboost_date_time -lboost_serialization -lboost_locale -lpqxx -lmongocxx -lbsoncxx -lcurl -lpthread -llapack
 GCC = g++
 EXE = ../bin/
 

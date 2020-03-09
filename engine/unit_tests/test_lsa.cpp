@@ -4,12 +4,15 @@
 #include "../utils/article_utils.h"
 #include "../lsa.h"
 #include "../config.h"
+
 #include "boost/test/included/unit_test.hpp"
 #include <chrono>
+#include <fstream>
 
 using namespace boost::unit_test;
 using namespace boost;
 using namespace std;
+
 
 BOOST_AUTO_TEST_CASE(test_lsa_svd)
 {
@@ -34,10 +37,10 @@ BOOST_AUTO_TEST_CASE(test_lsa_svd)
 
 	cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
 	LSA lsa_processor{article_builder.get_vocabulary()};
-	lsa_processor.run_svd(articles, articles.size());
+	lsa_processor.run_svd(articles, articles.size(), 20);
 	//lsa_processor.print_term_doc_matrix();
-	lsa_processor.print_sigma();
-	cout << "\n\n\n";
-	lsa_processor.print_top_concepts(articles, 0.12);
+	//lsa_processor.print_sigma();
+	//cout << "\n\n\n";
+	//lsa_processor.print_top_concepts(articles, 0.12);
 }
 

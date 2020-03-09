@@ -9,6 +9,9 @@
 #include "article.h"
 #include "lsh_deduplication.h"
 #include <functional>
+#include <boost/locale.hpp>
+
+const size_t MINHASH_RANGE_MAX = 100000000;
 
 enum class BuilderRes
 {
@@ -21,11 +24,17 @@ class ArticleBuilder : public BsonBuilder
 {
 public:
 	explicit ArticleBuilder(float invalid_words_threshold = 0.3)
-	:min_hash_(SIGNATURE_SIZE, MAX_WORDS_NO),
-	lsh_deduplication_(SIGNATURE_SIZE, load_articles_signatures()),
-	invalid_words_threshold_(invalid_words_threshold)
+		:min_hash_(SIGNATURE_SIZE, MINHASH_RANGE_MAX),
+		lsh_deduplication_(SIGNATURE_SIZE, load_articles_signatures()),
+		invalid_words_threshold_(invalid_words_threshold)
 	{
-		load_vocabulary();
+            //create system default locale
+            boost::locale::generator gen;
+            std::locale loc=gen(""); 
+            //make it system global
+            std::locale::global(loc); 
+
+            load_vocabulary();
 	}
 
 	~ArticleBuilder()

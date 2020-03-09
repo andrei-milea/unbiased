@@ -9,6 +9,7 @@ using bson_doc_bld = bsoncxx::builder::stream::document;
 using bson_doc = bsoncxx::document::value;
 using bson_doc_view = bsoncxx::document::view;
 
+//TODO - share same builder?
 class BsonBuilder
 {
 public:

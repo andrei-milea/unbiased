@@ -6,7 +6,6 @@ import sys
 import matplotlib.pyplot as plt
 
 sys.path.insert(1, '../scripts')
-from article import from_xml
 from mongo_utils import MongoUtils
 from ner import ner_processor
 from ner_features import *

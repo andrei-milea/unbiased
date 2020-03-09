@@ -1,20 +1,25 @@
 #include "vocabulary.h"
 
-Vocabulary::Vocabulary(const std::string& words_filename, const std::string& stopwords_filename)
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+Vocabulary::Vocabulary(const string& words_filename, const string& stopwords_filename)
 {
-	std::ifstream words_file{words_filename};
-	std::ifstream stopwords_file{stopwords_filename};
+	ifstream words_file{words_filename};
+	ifstream stopwords_file{stopwords_filename};
 	if(!words_file.is_open())
 		throw std::runtime_error("Vocabulary::Vocabulary error: failed to open words file - " + words_filename);
 	if(!stopwords_file.is_open())
 		throw std::runtime_error("Vocabulary::Vocabulary error: failed to open words file - " + stopwords_filename);
 
-	std::string words_str, stopwords_str;
-	std::getline(words_file, words_str, '\n');
-	std::getline(stopwords_file, stopwords_str, '\n');
+	string words_str, stopwords_str;
+	getline(words_file, words_str, '\n');
+	getline(stopwords_file, stopwords_str, '\n');
 	
-	std::set<std::string> words = tokenize_stem(words_str);
-	std::vector<std::string> stopwords = tokenize(stopwords_str);
+	set<string> words = tokenize_stem(words_str);
+	vector<string> stopwords = tokenize(stopwords_str);
 
 	for(const auto& stop_word : stopwords)
 		stop_words_.insert(stop_word);
@@ -29,6 +34,7 @@ Vocabulary::Vocabulary(const std::string& words_filename, const std::string& sto
 			count++;
 		}
 	}
+        cout << "stems added: " << count << endl;
 }
 
 void Vocabulary::add_words_measures(Article& article)const
@@ -47,9 +53,9 @@ void Vocabulary::add_words_measures(Article& article)const
 		else
 		{
 			article.words_no++;
-			auto token = get_stem(article.tokens[tidx]);
-			size_t word_id = 0;
-			if(true == get_word_id(token, word_id))
+			auto stem = get_stem(article.tokens[tidx]);
+			WordId word_id = 0;
+			if(true == get_word_id(stem, word_id))
 			{
 				assert(word_id < words_no());
 				article.tf[word_id]++;

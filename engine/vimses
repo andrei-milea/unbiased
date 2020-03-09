@@ -11,6 +11,8 @@ nnoremap GR :grep '\b<cword>\b' %:p:h/*
 map Q gq
 vmap gx <Plug>NetrwBrowseXVis
 nmap gx <Plug>NetrwBrowseX
+vnoremap <silent> <Plug>NetrwBrowseXVis :call netrw#BrowseXVis()
+nnoremap <silent> <Plug>NetrwBrowseX :call netrw#BrowseX(expand((exists("g:netrw_gx")? g:netrw_gx : '<cfile>')),netrw#CheckIfRemote())
 nmap <F11> :!make && konsole -e "gdb ./tst_group"
 nmap <F12> :mkses! vimses :wqa
 nmap <F8> :make test
@@ -20,8 +22,7 @@ nmap <F9> :!konsole --workdir . --hold -e "make"
 nmap <F3> :tabnew
 nmap <F2> :tabnext
 nmap <F1> :tabprevious
-vnoremap <silent> <Plug>NetrwBrowseXVis :call netrw#BrowseXVis()
-nnoremap <silent> <Plug>NetrwBrowseX :call netrw#BrowseX(expand((exists("g:netrw_gx")? g:netrw_gx : '<cfile>')),netrw#CheckIfRemote())
+map <silent> <C-S> :if expand("%") == "":browse confirm w:else:confirm w:endif
 map <S-Insert> <MiddleMouse>
 inoremap  u
 abbr c2 *****************************************/
@@ -36,6 +37,7 @@ set backupdir=~/.cache/vim/backup//
 set cindent
 set directory=~/.cache/vim/swap//
 set display=truncate
+set expandtab
 set fileencodings=ucs-bom,utf-8,default,latin1
 set guicursor=n-v-c:block-Cursor,i:ver10-iCursor,n-v-c:blinkon0,i:blinkwait10
 set guifont=Courier\ 13
@@ -51,8 +53,10 @@ set mouse=a
 set nrformats=bin,hex
 set scrolloff=5
 set shiftwidth=4
+set shortmess=filnxtToO
 set showcmd
 set suffixes=.bak,~,.o,.info,.swp,.aux,.bbl,.blg,.brf,.cb,.dvi,.idx,.ilg,.ind,.inx,.jpg,.log,.out,.png,.toc
+set noswapfile
 set tabstop=4
 set termencoding=utf-8
 set ttimeout
@@ -73,48 +77,8 @@ if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
-badd +39 mongodb.cpp
-badd +5 lsa.cpp
-badd +33 unit_tests/test_lsa.cpp
-badd +50 article.h
-badd +37 /home/proj/unbiased/scripts/mongo_utils.py
-badd +18 /home/proj/unbiased/scripts/data_analysis.py
-badd +48 article_builder.h
-badd +22 /home/proj/unbiased/scripts/articles_analisys.py
-badd +7 lsa.h
-badd +49 engine.cpp
-badd +14 Makefile
-badd +2 unit_tests/Makefile
-badd +28 mongodb.h
-badd +127 vocabulary.h
-badd +22 unit_tests/test_vocabulary.cpp
-badd +6 engine.h
-badd +61 entry_processor.h
-badd +29 minhash.h
-badd +26 lsh_deduplication.h
-badd +1 story.h
-badd +48 config.h
-badd +1 thread_pool.h
-badd +30 pqldb.h
-badd +16 utils/tokenize.h
-badd +16 stemmer.h
-badd +58 vocabulary.cpp
-badd +67 article_builder.cpp
-badd +10 bson_builder.h
-badd +63 bson_builder.cpp
-badd +95 unit_tests/test_article_builder.cpp
-badd +92 unit_tests/test_minhash.cpp
-badd +12 unit_tests/test_mongodb.cpp
-badd +1 clustering.h
-badd +5 lsa_clustering.cpp
-badd +5 lsa_clustering.h
-badd +1 bu_clustering.h
-badd +1 bu_clustering.cpp
-badd +1 unit_tests/test_bu_clustering.cpp
-badd +1 entry_processor.cpp
-badd +7 wordnet_ontology.h
 argglobal
-silent! argdel *
+%argdel
 $argadd mongodb.cpp
 set stal=2
 tabnew
@@ -134,7 +98,7 @@ tabnew
 tabnew
 tabnew
 tabnew
-tabnext -17
+tabrewind
 edit article_builder.h
 set splitbelow splitright
 set nosplitbelow
@@ -172,6 +136,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -229,8 +194,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -247,6 +214,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -257,20 +225,21 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 27 - ((6 * winheight(0) + 18) / 37)
+let s:l = 65 - ((38 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-27
-normal! 05|
+65
+normal! 011|
 lcd /home/proj/unbiased/engine
 tabnext
-edit /home/proj/unbiased/engine/article_builder.cpp
+edit /home/proj/unbiased/engine/vocabulary.cpp
 set splitbelow splitright
 set nosplitbelow
 set nosplitright
@@ -307,6 +276,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -364,8 +334,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -382,6 +354,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -392,17 +365,18 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 34 - ((18 * winheight(0) + 18) / 37)
+let s:l = 34 - ((7 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 34
-normal! 05|
+normal! 0
 lcd /home/proj/unbiased/engine
 tabnext
 edit /home/proj/unbiased/engine/entry_processor.h
@@ -442,6 +416,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -499,8 +474,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -517,6 +494,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -527,12 +505,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 22 - ((21 * winheight(0) + 18) / 37)
+let s:l = 22 - ((19 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -577,6 +556,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -634,8 +614,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -652,6 +634,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -662,12 +645,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 47 - ((12 * winheight(0) + 18) / 37)
+let s:l = 47 - ((14 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -712,6 +696,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -769,8 +754,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -787,6 +774,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -797,12 +785,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 12 - ((11 * winheight(0) + 18) / 37)
+let s:l = 12 - ((11 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -847,6 +836,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -904,8 +894,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -922,6 +914,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -932,17 +925,18 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 26 - ((14 * winheight(0) + 18) / 37)
+let s:l = 10 - ((9 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-26
-normal! 013|
+10
+normal! 0
 lcd /home/proj/unbiased/engine
 tabnext
 edit /home/proj/unbiased/engine/Makefile
@@ -982,6 +976,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -1039,8 +1034,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -1057,6 +1054,7 @@ setlocal syntax=make
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -1067,17 +1065,18 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 9 - ((7 * winheight(0) + 18) / 37)
+let s:l = 23 - ((22 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-9
-normal! 068|
+23
+normal! 015|
 lcd /home/proj/unbiased/engine
 tabnext
 edit /home/proj/unbiased/engine/unit_tests/Makefile
@@ -1117,6 +1116,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -1174,8 +1174,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -1192,6 +1194,7 @@ setlocal syntax=make
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -1202,17 +1205,18 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 86 - ((35 * winheight(0) + 18) / 37)
+let s:l = 59 - ((36 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-86
-normal! 0141|
+59
+normal! 040|
 lcd /home/proj/unbiased/engine
 tabnext
 edit /home/proj/unbiased/engine/unit_tests/test_bu_clustering.cpp
@@ -1252,6 +1256,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -1309,8 +1314,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -1327,6 +1334,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -1337,12 +1345,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 28 - ((26 * winheight(0) + 17) / 35)
+let s:l = 28 - ((27 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -1387,6 +1396,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -1444,8 +1454,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -1462,6 +1474,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -1472,12 +1485,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 4 - ((3 * winheight(0) + 17) / 35)
+let s:l = 4 - ((3 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -1522,6 +1536,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -1579,8 +1594,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -1597,6 +1614,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -1607,12 +1625,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 43 - ((25 * winheight(0) + 17) / 35)
+let s:l = 43 - ((31 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -1657,6 +1676,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -1714,8 +1734,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -1732,6 +1754,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -1742,12 +1765,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 105 - ((29 * winheight(0) + 17) / 35)
+let s:l = 105 - ((36 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -1792,6 +1816,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -1849,8 +1874,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -1867,6 +1894,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -1877,12 +1905,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 19 - ((11 * winheight(0) + 17) / 35)
+let s:l = 19 - ((14 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -1927,6 +1956,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -1984,8 +2014,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -2002,6 +2034,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -2012,12 +2045,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 30 - ((18 * winheight(0) + 17) / 35)
+let s:l = 30 - ((22 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -2062,6 +2096,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -2119,8 +2154,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -2137,6 +2174,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -2147,12 +2185,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 23 - ((15 * winheight(0) + 17) / 35)
+let s:l = 23 - ((18 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -2197,6 +2236,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -2254,8 +2294,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -2272,6 +2314,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -2282,12 +2325,13 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 49 - ((24 * winheight(0) + 17) / 35)
+let s:l = 49 - ((29 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
@@ -2332,6 +2376,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -2389,8 +2434,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -2407,6 +2454,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -2417,17 +2465,18 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 47 - ((6 * winheight(0) + 17) / 35)
+let s:l = 8 - ((7 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-47
-normal! 010|
+8
+normal! 017|
 lcd /home/proj/unbiased/engine
 tabnext
 edit /home/proj/unbiased/engine/vocabulary.cpp
@@ -2467,6 +2516,7 @@ setlocal cryptmethod=
 setlocal nocursorbind
 setlocal nocursorcolumn
 setlocal nocursorline
+setlocal cursorlineopt=both
 setlocal define=
 setlocal dictionary=
 setlocal nodiff
@@ -2524,8 +2574,10 @@ setlocal norelativenumber
 setlocal norightleft
 setlocal rightleftcmd=search
 setlocal noscrollbind
+setlocal scrolloff=-1
 setlocal shiftwidth=4
 setlocal noshortname
+setlocal sidescrolloff=-1
 setlocal signcolumn=auto
 setlocal nosmartindent
 setlocal softtabstop=0
@@ -2542,6 +2594,7 @@ setlocal syntax=cpp
 endif
 setlocal tabstop=4
 setlocal tagcase=
+setlocal tagfunc=
 setlocal tags=
 setlocal termwinkey=
 setlocal termwinscroll=10000
@@ -2552,20 +2605,61 @@ setlocal noundofile
 setlocal undolevels=-123456
 setlocal varsofttabstop=
 setlocal vartabstop=
+setlocal wincolor=
 setlocal nowinfixheight
 setlocal nowinfixwidth
 setlocal wrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 56 - ((17 * winheight(0) + 17) / 35)
+let s:l = 56 - ((21 * winheight(0) + 21) / 43)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
 56
 normal! 025|
 lcd /home/proj/unbiased/engine
-tabnext 11
+tabnext 2
 set stal=1
+badd +39 /home/proj/unbiased/engine/mongodb.cpp
+badd +5 /home/proj/unbiased/engine/lsa.cpp
+badd +33 /home/proj/unbiased/engine/unit_tests/test_lsa.cpp
+badd +50 /home/proj/unbiased/engine/article.h
+badd +37 /home/proj/unbiased/scripts/mongo_utils.py
+badd +18 /home/proj/unbiased/scripts/data_analysis.py
+badd +48 /home/proj/unbiased/engine/article_builder.h
+badd +22 /home/proj/unbiased/scripts/articles_analisys.py
+badd +7 /home/proj/unbiased/engine/lsa.h
+badd +49 /home/proj/unbiased/engine/engine.cpp
+badd +14 /home/proj/unbiased/engine/Makefile
+badd +2 /home/proj/unbiased/engine/unit_tests/Makefile
+badd +28 /home/proj/unbiased/engine/mongodb.h
+badd +127 /home/proj/unbiased/engine/vocabulary.h
+badd +22 /home/proj/unbiased/engine/unit_tests/test_vocabulary.cpp
+badd +6 /home/proj/unbiased/engine/engine.h
+badd +61 /home/proj/unbiased/engine/entry_processor.h
+badd +29 /home/proj/unbiased/engine/minhash.h
+badd +26 /home/proj/unbiased/engine/lsh_deduplication.h
+badd +1 /home/proj/unbiased/engine/story.h
+badd +48 /home/proj/unbiased/engine/config.h
+badd +1 /home/proj/unbiased/engine/thread_pool.h
+badd +30 /home/proj/unbiased/engine/pqldb.h
+badd +16 /home/proj/unbiased/engine/utils/tokenize.h
+badd +16 /home/proj/unbiased/engine/stemmer.h
+badd +58 /home/proj/unbiased/engine/vocabulary.cpp
+badd +34 /home/proj/unbiased/engine/article_builder.cpp
+badd +10 /home/proj/unbiased/engine/bson_builder.h
+badd +63 /home/proj/unbiased/engine/bson_builder.cpp
+badd +95 /home/proj/unbiased/engine/unit_tests/test_article_builder.cpp
+badd +92 /home/proj/unbiased/engine/unit_tests/test_minhash.cpp
+badd +12 /home/proj/unbiased/engine/unit_tests/test_mongodb.cpp
+badd +1 /home/proj/unbiased/engine/clustering.h
+badd +5 /home/proj/unbiased/engine/lsa_clustering.cpp
+badd +5 /home/proj/unbiased/engine/lsa_clustering.h
+badd +1 /home/proj/unbiased/engine/bu_clustering.h
+badd +1 /home/proj/unbiased/engine/bu_clustering.cpp
+badd +1 /home/proj/unbiased/engine/unit_tests/test_bu_clustering.cpp
+badd +1 /home/proj/unbiased/engine/entry_processor.cpp
+badd +7 /home/proj/unbiased/engine/wordnet_ontology.h
 if exists('s:wipebuf') && len(win_findbuf(s:wipebuf)) == 0
   silent exe 'bwipe ' . s:wipebuf
 endif

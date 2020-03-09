@@ -2,6 +2,7 @@
 #include "utils/tokenize.h"
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/locale.hpp>
 #include <vector>
 
 using bsoncxx::builder::stream::finalize;
@@ -43,8 +44,13 @@ BuilderRes ArticleBuilder::from_xml(const std::string &article_xml, Article &art
 		return BuilderRes::DUPLICATE;
 	
 	//increase words frequency for all words in the article
+        //and add token to stemid->tokens map
+        //TODO - improve this
 	for(const auto& idx_token : article.ids_tokens_map)
+        {
 		vocabulary_.increase_word_freq(idx_token.first);
+		vocabulary_.add_token(idx_token.first, boost::locale::to_lower(article.tokens[idx_token.second]));
+        }
 	return BuilderRes::VALID;
 }
 

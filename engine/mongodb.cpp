@@ -22,10 +22,10 @@ using bsoncxx::builder::stream::finalize;
 
 void MongoDb::save_doc(const string& collect_str, bson_doc doc)
 {
-	collection collect = database_[collect_str];
-	bsoncxx::stdx::optional<mongocxx::result::insert_one> result = collect.insert_one(std::move(doc));
-	if(!result)
-		throw runtime_error("MongoDb::save_doc error: failed to insert value in db");
+    collection collect = database_[collect_str];
+    bsoncxx::stdx::optional<mongocxx::result::insert_one> result = collect.insert_one(std::move(doc));
+    if(!result)
+        throw runtime_error("MongoDb::save_doc error: failed to insert value in db");
 }
 
 mongocxx::cursor MongoDb::get_docs(const std::string& collect_str, const std::string& key, const std::string& value)const

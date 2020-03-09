@@ -1,6 +1,7 @@
-#define BOOST_TEST_MODULE "test_article_builder"
+#define BOOST_TEST_MODULE "test_min_hash"
 
 #include "../minhash.h"
+#include "../article_builder.h"
 #include "boost/test/included/unit_test.hpp"
 #include <vector>
 #include <set>
@@ -54,7 +55,7 @@ void get_similarity_coeffs(size_t set_size, size_t sets_no, const pair<size_t, s
         }
     }
     
-	MinHash minhash(SIGNATURE_SIZE, MAX_WORDS_NO);
+	MinHash minhash(SIGNATURE_SIZE, MINHASH_RANGE_MAX);
     sim_coef_vec.resize(sets_no, vector<float>(sets_no, 0));
     for(size_t i = 0; i < sets_no; i++)
         for(size_t j = i + 1; j < sets_no; j++)

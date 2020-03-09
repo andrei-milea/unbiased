@@ -6,14 +6,7 @@
 #include <csignal>
 #include <exception>
 
-#include <qpid/messaging/Connection.h>
-#include <qpid/messaging/Message.h>
-#include <qpid/messaging/Receiver.h>
-#include <qpid/messaging/Sender.h>
-#include <qpid/messaging/Session.h>
-
 using namespace std;
-using namespace qpid::messaging;
 
 
 int main()
@@ -23,21 +16,14 @@ int main()
 
 	try
 	{
-		//TODO - read these from config.xml
-		const string broker = "localhost:5673";
-		const string address = "unbiased.new_urls; {create: always, node: {type: 'queue'}}";
-		const string connection_options = "";
-		Connection connection(broker, connection_options);
-		connection.open();
-		Session session = connection.createSession();
-		Receiver receiver = session.createReceiver(address);
-		while(true)
+		//TODO use zeromq
+		/*while(true)
 		{
 			auto message = receiver.fetch();
 			std::cout << message.getContent() << std::endl;
 			engine.get_processor().scrap_and_process(message.getContent());
 			session.acknowledge();
-		}
+		}*/
 	}
 	catch(const std::exception& ex)
 	{

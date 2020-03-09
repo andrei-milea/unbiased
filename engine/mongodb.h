@@ -25,9 +25,9 @@ public:
 	{
 	}
 
-	void save_doc(const std::string& collect_str, bson_doc doc);
+    void save_doc(const std::string& collect_str, bson_doc doc);
 	
-	void update_doc(const std::string& collect_str, const bson_doc& doc,
+    void update_doc(const std::string& collect_str, const bson_doc& doc,
 					 const std::string& key="", const std::string& value="");
 
 	void drop_collection(const std::string& collect_str)

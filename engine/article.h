@@ -9,7 +9,6 @@
 #include <unordered_map>
 
 const int SIGNATURE_SIZE = 100;
-const size_t MAX_WORDS_NO = 100000000;
 using Signature = std::array<uint32_t, SIGNATURE_SIZE>;
 
 struct Analytics

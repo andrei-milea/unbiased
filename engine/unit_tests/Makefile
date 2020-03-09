@@ -1,5 +1,5 @@
 all: test_vocabulary test_article_builder test_mongodb test_minhash test_lsa test_bu_clustering
-CFLAGS = -std=c++14 -c -g -Wall -DDLIB_NO_GUI_SUPPORT -I /usr/include/boost -I /usr/local/include/mongocxx/v_noabi -I /usr/local/include/bsoncxx/v_noabi -I ../utils/dlib
+CFLAGS = -Wno-sign-compare -std=c++14 -c -g -Wall -DDLIB_NO_GUI_SUPPORT -I /usr/include/boost -I /usr/local/include/mongocxx/v_noabi -I /usr/local/include/bsoncxx/v_noabi -I ../utils/dlib
 LFLAGS = -L/usr/local/lib64 -lboost_system -lboost_filesystem -lboost_thread -lboost_serialization -lboost_date_time -lboost_locale -lpqxx -lmongocxx -lbsoncxx -lcurl -llapack -lpthread
 GCC = g++
 EXE = ../../bin/tests/
@@ -7,11 +7,11 @@ EXE = ../../bin/tests/
 test_vocabulary: test_vocabulary.o vocabulary.o porter2_stemmer.o
 	$(GCC) $(LFLAGS) porter2_stemmer.o vocabulary.o test_vocabulary.o -o $(EXE)test_vocabulary
 
-test_article_builder: test_article_builder.o bson_builder.o article_builder.o vocabulary.o porter2_stemmer.o mongodb.o murmur3.o
-	$(GCC) $(LFLAGS) article_builder.o bson_builder.o porter2_stemmer.o mongodb.o vocabulary.o murmur3.o test_article_builder.o -o $(EXE)test_article_builder
+test_article_builder: test_article_builder.o dlib.o bson_builder.o article_builder.o vocabulary.o porter2_stemmer.o mongodb.o murmur3.o
+	$(GCC) $(LFLAGS) article_builder.o dlib.o bson_builder.o porter2_stemmer.o mongodb.o vocabulary.o murmur3.o test_article_builder.o -o $(EXE)test_article_builder
 
-test_mongodb: test_mongodb.o article_builder.o bson_builder.o mongodb.o vocabulary.o murmur3.o porter2_stemmer.o
-	$(GCC) $(LFLAGS) murmur3.o article_builder.o bson_builder.o vocabulary.o porter2_stemmer.o mongodb.o test_mongodb.o -o $(EXE)test_mongodb
+test_mongodb: test_mongodb.o article_builder.o dlib.o bson_builder.o mongodb.o vocabulary.o murmur3.o porter2_stemmer.o
+	$(GCC) $(LFLAGS) murmur3.o article_builder.o dlib.o bson_builder.o vocabulary.o porter2_stemmer.o mongodb.o test_mongodb.o -o $(EXE)test_mongodb
 
 test_bu_clustering: bu_clustering.o dlib.o article_builder.o bson_builder.o mongodb.o test_bu_clustering.o lsa.o vocabulary.o murmur3.o porter2_stemmer.o
 	$(GCC) $(LFLAGS) bu_clustering.o dlib.o article_builder.o bson_builder.o mongodb.o murmur3.o porter2_stemmer.o vocabulary.o lsa.o test_bu_clustering.o -o $(EXE)test_bu_clustering
