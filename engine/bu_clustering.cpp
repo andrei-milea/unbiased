@@ -44,7 +44,7 @@ void BU_Clustering::create_clusters(const std::vector<Article>& articles)
     }
 }
 
-size_t BU_Clustering::cluster(const Article& article)
+size_t BU_Clustering::add_to_clusters(const Article& article)
 {
     //TODO
 }

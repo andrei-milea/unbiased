@@ -1,6 +1,7 @@
 #ifndef _BU_CLUSTERING
 #define _BU_CLUSTERING
 
+#include "vocabulary.h"
 #include "clustering.h"
 #include "lsa.h"
 
@@ -15,13 +16,13 @@ public:
 
     void create_clusters(const std::vector<Article>& articles) override;
 
-    size_t cluster(const Article& article) override;
+    size_t add_to_clusters(const Article& article) override;
 
 protected:
     template <class FUNC>
     void build_dist_mat(const std::vector<Article>& articles, FUNC&& dist_fnc)
     {
-        lsa_proc_.run_svd(articles, articles.size());
+        lsa_proc_.run_svd(articles);
         const auto& docs_concepts_mat = lsa_proc_.get_docs_concepts_mat();
         dist_mat_.set_size(docs_concepts_mat.nr(), docs_concepts_mat.nr());
         for (long di = 0; di < dist_mat_.nr(); di++)

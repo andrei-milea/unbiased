@@ -15,17 +15,19 @@
 using bson_doc_bld = bsoncxx::builder::stream::document;
 using bson_doc = bsoncxx::document::value;
 
+//provides a connection to a mongodb database and an interface
+//to store/retrieve already serialized(bson) objects
 class MongoDb
 {
 public:
-    MongoDb(const std::string& db_name = "")
+    explicit MongoDb(const std::string& db_name)
         : db_str_(db_name.empty() ? Config::get().mongo_credentials.dbname : db_name)
         , client_conn_(get_connection_uri())
         , database_(client_conn_[db_str_])
     {
     }
 
-    void save_doc(const std::string& collect_str, bson_doc doc);
+    std::string save_doc(const std::string& collect_str, bson_doc doc);
 
     void update_doc(const std::string& collect_str, const bson_doc& doc,
         const std::string& key = "", const std::string& value = "");
@@ -53,7 +55,9 @@ public:
 private:
     mongocxx::uri get_connection_uri() const
     {
-        return mongocxx::uri { "mongodb://" + Config::get().mongo_credentials.username + ":" + url_encode(Config::get().mongo_credentials.password) + "@" + Config::get().mongo_credentials.server };
+        return mongocxx::uri { "mongodb://" + Config::get().mongo_credentials.username + ":" 
+                   + url_encode(Config::get().mongo_credentials.password) + "@"
+                   + Config::get().mongo_credentials.server };
     }
 
     std::string url_encode(const std::string& source) const
@@ -68,7 +72,7 @@ private:
 
 private:
     std::string db_str_;
-    mongocxx::instance inst_;
+    static mongocxx::instance inst_;
     mongocxx::client client_conn_;
     mongocxx::database database_;
 };

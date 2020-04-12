@@ -3,11 +3,12 @@
 
 #include <array>
 #include <atomic>
+#include <memory>
 #include <boost/container/flat_set.hpp>
 
-using WordId = int32_t;
+using StemId = int32_t;
 using TokensSet = boost::container::flat_set<std::string>;
-constexpr int32_t MAX_WORDS_NO = 152588;
+constexpr int32_t MAX_STEMS_NO = 152588;
 
 class StemIdTokensRCUMap
 {
@@ -18,9 +19,9 @@ public:
     StemIdTokensRCUMap& operator=(const StemIdTokensRCUMap&) = delete;
 
     // thread-safe, non-locking - implements read-copy-update mechanism
-    void add_token(WordId id, const std::string& token)
+    void add_token(StemId id, const std::string& token)
     {
-        assert(id < MAX_WORDS_NO);
+        assert(id < MAX_STEMS_NO);
         bool retry = true;
         while (retry)
         {
@@ -43,13 +44,13 @@ public:
         }
     }
 
-    std::shared_ptr<TokensSet> get_tokens(WordId id) const
+    std::shared_ptr<TokensSet> get_tokens(StemId id) const
     {
         return tokens_rcu_map_[id];
     }
 
 private:
-    std::array<std::shared_ptr<TokensSet>, MAX_WORDS_NO> tokens_rcu_map_;
+    std::array<std::shared_ptr<TokensSet>, MAX_STEMS_NO> tokens_rcu_map_;
 };
 
 #endif

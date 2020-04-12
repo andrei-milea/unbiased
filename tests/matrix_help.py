@@ -13,4 +13,3 @@ def to_csr_mat(mat_cpp):
             np_mat[row, col] = term_doc_mat.get_mat_elem(mat_cpp, row, col)
     return csr_matrix(np_mat)
 
-

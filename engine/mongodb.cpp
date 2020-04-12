@@ -1,31 +1,24 @@
 #include "mongodb.h"
-//#include <bsoncxx/json.hpp>
 #include <mongocxx/client.hpp>
 #include <mongocxx/stdx.hpp>
 #include <mongocxx/uri.hpp>
-//#include <bsoncxx/types.hpp>
-//#include <bsoncxx/types/value.hpp>
-//#include <bsoncxx/stdx/string_view.hpp>
-//#include <bsoncxx/builder/stream/array.hpp>
-//#include <bsoncxx/builder/stream/helpers.hpp>
 
 using namespace std;
 using bsoncxx::builder::stream::finalize;
 using mongocxx::collection;
 using mongocxx::cursor;
-//using bsoncxx::builder::stream::array_context;
-//using bsoncxx::builder::stream::open_array;
-//using bsoncxx::builder::stream::close_array;
-//using bsoncxx::builder::stream::open_document;
-//using bsoncxx::builder::stream::close_document;
-//using bsoncxx::builder::stream::finalize;
 
-void MongoDb::save_doc(const string& collect_str, bson_doc doc)
+mongocxx::instance MongoDb::inst_;
+
+string MongoDb::save_doc(const string& collect_str, bson_doc doc)
 {
     collection collect = database_[collect_str];
     bsoncxx::stdx::optional<mongocxx::result::insert_one> result = collect.insert_one(std::move(doc));
     if (!result)
         throw runtime_error("MongoDb::save_doc error: failed to insert value in db");
+
+    assert((*result).inserted_id().type() == bsoncxx::type::k_oid);
+    return (*result).inserted_id().get_oid().value.to_string();
 }
 
 mongocxx::cursor MongoDb::get_docs(const std::string& collect_str, const std::string& key, const std::string& value) const

@@ -3,6 +3,7 @@
 
 #define DLIB_USE_LAPACK //use LAPACK library
 
+#include "utils/log_helper.h"
 #include "article.h"
 #include "vocabulary.h"
 #include <dlib/matrix.h>
@@ -17,7 +18,7 @@ public:
     {
     }
 
-    void run_svd(const std::vector<Article>& articles, size_t all_articles_no, float tf_threshold = 1.0, int64_t trunc_size = 0);
+    void run_svd(const std::vector<Article>& articles, float tf_threshold = 1.0);
 
     const dlib::matrix<double>& get_terms_concepts_mat() const
     {
@@ -49,7 +50,7 @@ public:
     std::string get_word(size_t word_id) const
     {
         std::string keyword;
-        bool res = vocabulary_.get_word_stem(word_id, keyword);
+        bool res = vocabulary_.get_stem(word_id, keyword);
         assert(res);
         return keyword;
     }
@@ -60,7 +61,7 @@ public:
 
     std::vector<std::set<std::string>> get_top_concepts(const std::vector<Article>& articles, int64_t concepts, int64_t terms) const;
 
-    void build_term_doc_matrix(const std::vector<Article>& articles, size_t all_articles_no, float tf_threshold = 1.0);
+    void build_term_doc_matrix(const std::vector<Article>& articles, float tf_threshold = 1.0);
 
     //////debug api
     void print_top_concepts(const std::vector<Article>& articles, double threshold = 0.03) const;
@@ -72,16 +73,17 @@ public:
 private:
     //filter out terms that are not in any article
     //this index contains all term ids currently in use
-    void build_vocab_to_mat_idx(const std::vector<Article>& articles, float tf_threshold = 1.0)
+    void build_vocab_to_mat_idx(const std::vector<Article>& articles, float tf_threshold = 3.0)
     {
         assert(articles.size() > 0);
         size_t terms_no = articles[0].tf.size();
-        assert(vocabulary_.words_no() == terms_no);
+        assert(vocabulary_.stems_no() == terms_no);
+        spdlog::info("building terms matrix to vocab index terms {}, articles {}", terms_no, articles.size());
         for (size_t ridx = 0; ridx < terms_no; ridx++)
         {
             for (size_t cidx = 0; cidx < articles.size(); cidx++)
             {
-                if (articles[cidx].tf[ridx] >= tf_threshold)
+                if (articles[cidx].tf[ridx] >= tf_threshold && articles[cidx].tf[ridx] < articles.size()/2)
                 {
                     terms_mat_to_vocab_.push_back(ridx);
                     break;

@@ -9,13 +9,15 @@
 #include <unordered_map>
 #include <vector>
 
+constexpr int32_t BANDS_NO = 20;
+
 //this needs to be built on top of a cache(see redis or mongodb in-memory engine)
 class LSHDeduplication
 {
 public:
     LSHDeduplication(size_t signature_size, const std::vector<std::pair<std::string, Signature>>& docs_signatures)
         : signature_size_(signature_size)
-        , bands_no_(20)
+        , bands_no_(BANDS_NO)
         , rows_no_(signature_size_ / bands_no_)
     {
         std::lock_guard<std::mutex> lck(mtx_);
@@ -23,7 +25,7 @@ public:
         compute_lsh_groups(docs_signatures);
     }
 
-    std::set<std::string> process_doc(const std::pair<std::string, Signature>& doc_signature)
+    std::set<std::string> process_signature(const std::pair<std::string, Signature>& doc_signature)
     {
         std::set<std::string> duplicates;
         duplicates.insert(doc_signature.first);
@@ -73,7 +75,7 @@ private:
     size_t signature_size_;
     size_t bands_no_;
     size_t rows_no_;
-    std::vector<std::unordered_map<size_t, std::set<std::string>>> lsh_buckets_;
+    std::vector<std::unordered_map<int32_t, std::set<std::string>>> lsh_buckets_;
     std::mutex mtx_;
 };
 

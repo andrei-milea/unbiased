@@ -1,15 +1,21 @@
 #ifndef _MINHASH_H
 #define _MINHASH_H
 
-#include "article.h"
 #include "utils/murmur3.h"
 #include <cstdint>
 #include <set>
+#include <array>
 
+constexpr int32_t MINHASH_RANGE_MAX = 100000000;
+constexpr int32_t SIGNATURE_SIZE = 100;
+using Signature = std::array<int32_t, SIGNATURE_SIZE>;
+
+//class that computes the minhash signature
+//for a given set of shingles
 class MinHash
 {
 public:
-    MinHash(size_t hash_fcts_no, size_t range_max)
+    MinHash(int32_t hash_fcts_no, int32_t range_max)
         : hash_fcts_no_(hash_fcts_no)
         , range_max_(range_max)
     {
@@ -17,7 +23,9 @@ public:
 
     ~MinHash() {}
 
-    Signature compute_signature(const std::set<uint32_t>& shingles) const
+    //hash each shingle with a number of hash functions and store the minimum hash 
+    //P(sign(A) == sign(B)) = Jacc(A, B) = (A intersect B) / (A U B)
+    Signature compute_signature(const std::set<int32_t>& shingles) const
     {
         Signature signature;
         for (size_t idx = 0; idx < signature.size(); idx++)
@@ -26,8 +34,8 @@ public:
         {
             for (size_t hidx = 0; hidx < hash_fcts_no_; hidx++)
             {
-                uint32_t hash_val = 0;
-                MurmurHash3_x86_32(&elem, sizeof(uint32_t), hidx, &hash_val);
+                int32_t hash_val = 0;
+                MurmurHash3_x86_32(&elem, sizeof(int32_t), hidx, &hash_val);
                 hash_val %= range_max_;
                 if (signature[hidx] > hash_val)
                     signature[hidx] = hash_val;
@@ -37,8 +45,8 @@ public:
     }
 
 private:
-    size_t hash_fcts_no_;
-    size_t range_max_;
+    int32_t hash_fcts_no_;
+    int32_t range_max_;
 };
 
 #endif

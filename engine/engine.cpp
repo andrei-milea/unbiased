@@ -1,32 +1,37 @@
-#include "engine.h"
-#include "lsa.h"
-#include "mongodb.h"
-#include "pqldb.h"
-#include "utils/article_utils.h"
-#include <csignal>
+#include "pipeline.h"
+#include "config.h"
+#include "utils/log_helper.h"
+
 #include <exception>
+#include <zmq.hpp>
+#include <string>
 
 using namespace std;
 
 int main()
 {
-    Engine engine;
-    engine.get_processor().run(3);
-
     try
     {
-        //TODO use zeromq
-        /*while(true)
-		{
-			auto message = receiver.fetch();
-			std::cout << message.getContent() << std::endl;
-			engine.get_processor().scrap_and_process(message.getContent());
-			session.acknowledge();
-		}*/
+        spdlog::set_default_logger(std::make_shared<spdlog::logger>("runtime_logger", std::make_shared<spdlog::sinks::daily_file_sink_mt>("engine.log", 23, 59)));
+        Pipeline pipeline{Config::get().scrapper_buff_size};
+        pipeline.process_batch("articles.xml");
+        pipeline.start_processing_queue(3);
+
+        zmq::socket_t receiver{Pipeline::zmq_context_, ZMQ_PULL};
+        receiver.connect("ipc:///tmp/zmq_backend_sender");
+
+        //process all received urls
+        while (true)
+        {
+            zmq::message_t message;
+            receiver.recv(message);
+            std::string message_str(static_cast<char*>(message.data()), message.size());
+	    pipeline.enqueue_article(message_str);
+        }
     }
     catch (const std::exception& ex)
     {
-        cout << "critical error" << ex.what() << "\n";
+        spdlog::error("quiting, engine exception: {}", ex.what());
     }
     return 0;
 }

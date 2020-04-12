@@ -3,6 +3,7 @@
 
 #include <ostream>
 #include <set>
+#include <vector>
 #include <boost/container/flat_set.hpp>
 
 namespace std
@@ -16,7 +17,14 @@ namespace std
         return out;
     }
 
-    
+    template <typename T>
+    ostream& operator<<(ostream &out, const vector<T> & stl_vec)
+    {
+        for(const auto& elem : stl_vec)
+            out << elem << " ";
+        out << endl;
+        return out;
+    }
 }
 
 namespace boost

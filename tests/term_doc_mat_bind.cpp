@@ -1,33 +1,42 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <boost/locale.hpp>
 
 #include "../config.h"
 #include "../lsa.h"
+#include "../vocabulary.h"
+#include "../article_parser.h"
 #include "../utils/article_utils.h"
+#include "../utils/perf_clock.h"
+
+const string words_filename{"words.dat"};
+const string stopwords_filename{"stop_words.dat"};
 
 namespace py = pybind11;
 using namespace std;
 
 dlib::matrix<double> compute_term_doc_mat()
 {
-    ArticleBuilder article_builder { 1.0 };
+    Vocabulary vocab { words_filename, stopwords_filename };
+    ArticleParser article_parser{ vocab };
     vector<Article> articles;
     auto articles_xml = load_articles_xml("articles.xml");
     for (const auto& article_xml : articles_xml)
     {
         Article new_article;
-        auto result = article_builder.from_xml(article_xml, new_article);
-        if (result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
+        article_parser.parse_from_xml(article_xml, new_article);
+        if (new_article.is_valid())
         {
             articles.push_back(new_article);
+            article_parser.process_tokens(new_article);
         }
         else
             cout << "title: " << new_article.title << endl;
     }
 
     cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
-    LSA lsa_processor { article_builder.get_vocabulary() };
-    lsa_processor.build_term_doc_matrix(articles, articles.size(), 0.0);
+    LSA lsa_processor { vocab };
+    lsa_processor.build_term_doc_matrix(articles, 0.0);
     return lsa_processor.get_term_doc_matrix();
 }
 
@@ -36,24 +45,26 @@ pair<dlib::matrix<double>, dlib::matrix<double>> compute_lsa_mat()
     pair<dlib::matrix<double>, dlib::matrix<double>> res;
     try
     {
-        ArticleBuilder article_builder { 0.3 };
+        Vocabulary vocab { words_filename, stopwords_filename };
+        ArticleParser article_parser{ vocab };
         std::vector<Article> articles;
         auto articles_xml = load_articles_xml("articles.xml");
         for (const auto& article_xml : articles_xml)
         {
             Article new_article;
-            auto result = article_builder.from_xml(article_xml, new_article);
-            if (result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
+            article_parser.parse_from_xml(article_xml, new_article);
+            if (new_article.is_valid())
             {
                 articles.push_back(new_article);
+                article_parser.process_tokens(new_article);
             }
             else
                 cout << "title: " << new_article.title << endl;
         }
 
         cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
-        LSA lsa_processor { article_builder.get_vocabulary() };
-        lsa_processor.run_svd(articles, articles.size(), 20);
+        LSA lsa_processor { vocab };
+        lsa_processor.run_svd(articles);
         res.first = lsa_processor.get_terms_concepts_mat();
         res.second = lsa_processor.get_docs_concepts_mat();
     }
@@ -66,24 +77,36 @@ pair<dlib::matrix<double>, dlib::matrix<double>> compute_lsa_mat()
 
 std::vector<set<string>> compute_topics(int64_t concepts_no, int64_t terms_no)
 {
+    LogRunTime log_runtime("compute_topics");
     std::vector<set<string>> res;
     try
     {
-        ArticleBuilder article_builder { 0.3 };
+        Vocabulary vocab { words_filename, stopwords_filename };
+        ArticleParser article_parser{ vocab };
         std::vector<Article> articles;
         auto articles_xml = load_articles_xml("articles.xml");
+        std::set<string> titles;
         for (const auto& article_xml : articles_xml)
         {
             Article new_article;
-            auto result = article_builder.from_xml(article_xml, new_article);
-            if (result == BuilderRes::VALID || result == BuilderRes::DUPLICATE)
+            article_parser.parse_from_xml(article_xml, new_article);
+            if (titles.count(new_article.title) == 0 && new_article.is_valid())
+            {
+                titles.insert(new_article.title);
+                article_parser.process_tokens(new_article);
                 articles.push_back(new_article);
+            }
         }
+        log_runtime.log("loading_articles");
 
         //cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
-        LSA lsa_processor { article_builder.get_vocabulary() };
-        lsa_processor.run_svd(articles, articles.size());
+        LSA lsa_processor { vocab };
+        lsa_processor.run_svd(articles, 5);
+        lsa_processor.print_sigma();
+        log_runtime.log("run_svd");
+
         res = lsa_processor.get_top_concepts(articles, concepts_no, terms_no);
+        log_runtime.log("get_top_concepts");
     }
     catch (const std::exception& ex)
     {

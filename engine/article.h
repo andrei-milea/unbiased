@@ -1,44 +1,27 @@
 #ifndef _ARTICLE_H
 #define _ARTICLE_H
 
-#include <array>
+#include "minhash.h"
 #include <iostream>
 #include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
-const int SIGNATURE_SIZE = 100;
-using Signature = std::array<uint32_t, SIGNATURE_SIZE>;
-
-struct Analytics
-{
-    double importance_score;
-    double accuracy_score;
-};
-
 class Article
 {
 public:
-    Article()
-        : length(0)
-        , words_no(0)
-        , unknown_words_no(0)
-    {
-    }
 
     bool operator==(const Article& article) const noexcept
     {
         return /*id == article.id &&*/ url == article.url && title == article.title && source == article.source
-            && authors == article.authors && length == article.length && words_no == article.words_no && signature == article.signature
-            && tf == article.tf && keywords == article.keywords && entities == article.entities /*&& duplicates == article.duplicates*/;
+            && authors == article.authors && length == article.length && signature == article.signature
+            && tf == article.tf && keywords == article.keywords && entities == article.entities;
     }
 
-    void print_tf() const
+    bool is_valid(int32_t min_tokens = 100, float invalid_tokens_threshold = 0.3) const
     {
-        for (size_t idx = 0; idx < tf.size(); idx++)
-            std::cout << tf[idx] << " ";
-        std::cout << "\n";
+        return tokens.size() >= min_tokens && float(unknown_tokens_no + 1.0) / tokens.size() <= invalid_tokens_threshold;
     }
 
     std::string id;
@@ -48,17 +31,20 @@ public:
     std::string source;
     std::vector<std::string> authors;
     std::vector<std::string> tokens;
-    size_t length;
-    size_t words_no;
-    size_t unknown_words_no;
+    size_t length = 0;
+    int32_t unknown_tokens_no = 0;
     Signature signature;
     std::unordered_map<size_t, size_t> ids_tokens_map;
     std::vector<double> tf;
-    std::set<uint32_t> shingles;
     std::vector<std::string> keywords;
     std::vector<std::string> entities;
-    std::set<std::string> duplicates;
-    Analytics analitycs;
 };
+
+
+inline std::ostream& operator <<(std::ostream &out, const Article& art)
+{
+    out << art.id << art.title << "\n";
+    return out;
+}
 
 #endif
