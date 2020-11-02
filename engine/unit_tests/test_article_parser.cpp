@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_articles_from_xml)
     spdlog::info("articles: {} valid articles: {}", articles_xml.size(), articles.size());
 
     vector<ProcessedArticle> processed_articles;
-    for (auto && article : articles)
+    for (auto&& article : articles)
     {
         ProcessedArticle proc_article;
         article_parser.process_tokens(article, proc_article);

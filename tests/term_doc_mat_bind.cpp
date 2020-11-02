@@ -39,7 +39,7 @@ dlib::matrix<double> compute_term_doc_mat()
         }
     }
     std::vector<ProcessedArticle> processed_articles;
-    for (auto && article : articles)
+    for (auto&& article : articles)
     {
         ProcessedArticle proc_article;
         article_parser.process_tokens(article, proc_article);
@@ -78,7 +78,7 @@ pair<dlib::matrix<double>, dlib::matrix<double>> compute_lsa_mat()
             }
         }
         std::vector<ProcessedArticle> processed_articles;
-        for (auto && article : articles)
+        for (auto&& article : articles)
         {
             ProcessedArticle proc_article;
             article_parser.process_tokens(article, proc_article);
@@ -126,7 +126,7 @@ std::vector<set<string>> compute_topics(int64_t concepts_no, int64_t terms_no)
         }
         log_runtime.log("parsing articles and loading vocab");
         std::vector<ProcessedArticle> processed_articles;
-        for (auto && article : articles)
+        for (auto&& article : articles)
         {
             ProcessedArticle proc_article;
             article_parser.process_tokens(article, proc_article);

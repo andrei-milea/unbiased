@@ -21,14 +21,14 @@ struct ArticleMetaData
     bool operator==(const ArticleMetaData& article_meta) const noexcept
     {
         return id == article_meta.id && url == article_meta.url && title == article_meta.title
-                && source == article_meta.source && authors == article_meta.authors;
+            && source == article_meta.source && authors == article_meta.authors;
     }
 };
 
 struct Article
 {
     std::string text;
-    std::vector<std::string> tokens;//TODO should be string_view
+    std::vector<std::string> tokens; //TODO should be string_view
     ArticleMetaData meta_data;
 };
 
@@ -56,7 +56,7 @@ inline std::ostream& operator <<(std::ostream &out, const Article& art)
     return out;
 }
 
-inline std::ostream& operator <<(std::ostream &out, const ProcessedArticle& art)
+inline std::ostream& operator<<(std::ostream& out, const ProcessedArticle& art)
 {
     out << art.meta_data.id << art.meta_data.title << "\n";
     return out;

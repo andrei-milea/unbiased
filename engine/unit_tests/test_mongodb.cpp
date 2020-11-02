@@ -23,7 +23,7 @@ RegisterUnitTestLogger register_logger{BOOST_TEST_MODULE};
 const string words_filename{"words.dat"};
 const string stopwords_filename{"stop_words.dat"};
 
-static std::vector<ProcessedArticle> load_articles(MongoDb &db_inst)
+static std::vector<ProcessedArticle> load_articles(MongoDb& db_inst)
 {
     auto result = db_inst.get_docs("articles");
     std::vector<ProcessedArticle> articles;
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(test_save_articles)
         }
     }
     vector<ProcessedArticle> processed_articles;
-    for (auto && article : articles)
+    for (auto&& article : articles)
     {
         ProcessedArticle proc_article;
         article_parser.process_tokens(article, proc_article);

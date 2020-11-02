@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(test_lsa_svd)
 {
     LogRunTime log_runtime("test_lsa_svd");
     Vocabulary vocab { words_filename, stopwords_filename };
-    ArticleParser article_parser{ vocab };
+    ArticleParser article_parser { vocab };
     auto articles_xml = load_articles_xml("articles.xml");
     std::unordered_set<string> titles;
     std::vector<Article> articles;
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(test_lsa_svd)
     spdlog::info("articles: {} valid articles: {}", articles_xml.size(), articles.size());
     log_runtime.log("tokenized articles and loaded vocabulary");
     std::vector<ProcessedArticle> processed_articles;
-    for (auto && article : articles)
+    for (auto&& article : articles)
     {
         ProcessedArticle proc_article;
         article_parser.process_tokens(article, proc_article);

@@ -64,7 +64,7 @@ void Pipeline::process_batch(const string& filename_path)
 
         string id = save_article(Pipeline::mongodb_inst_, proc_article);
         proc_article.signature = minhash_.compute_signature(shingles);
-        if(!is_duplicate(make_pair(id, proc_article.signature)))
+        if (!is_duplicate(make_pair(id, proc_article.signature)))
             processed_articles.push_back(std::move(proc_article));
     }
 
@@ -117,7 +117,7 @@ void Pipeline::process_article(const string& article_str) noexcept
 
             string id = save_article(Pipeline::mongodb_inst_, proc_article);
             proc_article.signature = minhash_.compute_signature(shingles);
-            if(is_duplicate(make_pair(id, proc_article.signature)))
+            if (is_duplicate(make_pair(id, proc_article.signature)))
                 return;
 
             clustering_processor_->add_to_clusters(proc_article);
@@ -132,7 +132,7 @@ void Pipeline::process_article(const string& article_str) noexcept
     catch (const std::exception& ex)
     {
         spdlog::warn("exception {} while processing article url - {}, title - {}",
-                ex.what(), new_article.meta_data.url, new_article.meta_data.title);
+            ex.what(), new_article.meta_data.url, new_article.meta_data.title);
     }
 }
 

@@ -35,7 +35,7 @@ void ArticleParser::parse_from_xml(const std::string& article_xml, Article& arti
     article.text = pt.get<std::string>("article.text");
 }
 
-bool ArticleParser::tokenize_validate(Article& article, std::set<std::string> &valid_stems, int32_t min_tokens, float invalid_tokens_threshold)
+bool ArticleParser::tokenize_validate(Article& article, std::set<std::string>& valid_stems, int32_t min_tokens, float invalid_tokens_threshold)
 {
     article.tokens = tokenize(article.text);
     if (article.tokens.size() < min_tokens)
@@ -50,7 +50,7 @@ bool ArticleParser::tokenize_validate(Article& article, std::set<std::string> &v
             trim_and_stem(stem);
             valid_stems.insert(stem);
         }
-        else if(!vocabulary_.is_stop_word(token) && token.size() > 1)
+        else if (!vocabulary_.is_stop_word(token) && token.size() > 1)
             unknown_tokens_no++;
     }
     return float(unknown_tokens_no + 1.0) / article.tokens.size() <= invalid_tokens_threshold;

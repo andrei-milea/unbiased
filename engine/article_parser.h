@@ -16,11 +16,11 @@ public:
 
     void parse_from_xml(const std::string& article_xml, Article& article);
 
-    bool tokenize_validate(Article& article, std::set<std::string> &valid_stems,
-                            int32_t min_tokens = 100, float invalid_tokens_threshold = 0.3);
+    bool tokenize_validate(Article& article, std::set<std::string>& valid_stems,
+        int32_t min_tokens = 100, float invalid_tokens_threshold = 0.3);
 
     template <typename T = int32_t>
-    auto process_tokens(Article& article, ProcessedArticle &processed_article) const
+    auto process_tokens(Article& article, ProcessedArticle& processed_article) const
     {
         processed_article.tokens_no = article.tokens.size();
         processed_article.length = article.text.size();

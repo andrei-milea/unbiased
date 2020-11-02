@@ -95,7 +95,7 @@ public:
         return res;
     }
 
-    void add_stems(std::set<std::string> &&stems)
+    void add_stems(std::set<std::string>&& stems)
     {
         stems_.merge(stems);
     }

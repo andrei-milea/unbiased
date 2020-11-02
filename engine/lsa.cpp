@@ -29,7 +29,7 @@ void LSA::build_term_doc_matrix(const std::vector<ProcessedArticle>& articles, i
             assert(articles[cidx].tokens_no != 0);
             if (tf[ridx] > tf_thresold)
                 term_doc_mat_(ridx, cidx) = tf[ridx] / articles[cidx].tokens_no;
-                //* log(articles_no_ / vocabulary_.get_stem_freq(ridx));
+            //* log(articles_no_ / vocabulary_.get_stem_freq(ridx));
             assert(!isnan(term_doc_mat_(ridx, cidx)));
         }
     }
