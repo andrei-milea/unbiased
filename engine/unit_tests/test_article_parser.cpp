@@ -24,18 +24,27 @@ BOOST_AUTO_TEST_CASE(test_articles_from_xml)
     {
         Article new_article;
         article_parser.parse_from_xml(article_xml, new_article);
-        article_parser.process_tokens(new_article);
-        if (!new_article.tokens.empty() && new_article.is_valid())
-            articles.push_back(new_article);
-        else
-            spdlog::info("invalid article - tokens {}, unknown tokens {}", new_article.tokens.size(), new_article.unknown_tokens_no);
-
+        set<string> stems;
+        bool valid = article_parser.tokenize_validate(new_article, stems);
+        if (valid)
+        {
+            vocab.add_stems(std::move(stems));
+            articles.push_back(std::move(new_article));
+        }
     }
     spdlog::info("articles: {} valid articles: {}", articles_xml.size(), articles.size());
-    for (const auto& article : articles)
+
+    vector<ProcessedArticle> processed_articles;
+    for (auto && article : articles)
+    {
+        ProcessedArticle proc_article;
+        article_parser.process_tokens(article, proc_article);
+        processed_articles.push_back(std::move(proc_article));
+    }
+    for (const auto& article : processed_articles)
     {
         BOOST_REQUIRE(article.length > 1000);
-        BOOST_REQUIRE(article.tokens.size() >= article.unknown_tokens_no);
-        BOOST_REQUIRE_LE(float(article.unknown_tokens_no) / article.tokens.size(), valid_article_coeff);
+        BOOST_REQUIRE(article.tokens_no >= article.unknown_tokens_no);
+        BOOST_REQUIRE_LE(float(article.unknown_tokens_no) / article.tokens_no, valid_article_coeff);
     }
 }

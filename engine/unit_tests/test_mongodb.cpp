@@ -23,13 +23,13 @@ RegisterUnitTestLogger register_logger{BOOST_TEST_MODULE};
 const string words_filename{"words.dat"};
 const string stopwords_filename{"stop_words.dat"};
 
-static std::vector<Article> load_articles(MongoDb &db_inst)
+static std::vector<ProcessedArticle> load_articles(MongoDb &db_inst)
 {
     auto result = db_inst.get_docs("articles");
-    std::vector<Article> articles;
+    std::vector<ProcessedArticle> articles;
     for (const auto& doc : result)
     {
-        Article article;
+        ProcessedArticle article;
         from_bson(doc, article);
         articles.push_back(article);
     }
@@ -50,9 +50,6 @@ BOOST_AUTO_TEST_CASE(test_vocabulary_db)
     from_bson(*(result.begin()), new_vocab);
 
     BOOST_REQUIRE(vocab.stems_no() == new_vocab.stems_no());
-    BOOST_REQUIRE(vocab.stopwords_no() == new_vocab.stopwords_no());
-    BOOST_REQUIRE(new_vocab.stopwords_no() == 153);
-    BOOST_REQUIRE(new_vocab.stems_no() == 152588);
 }
 
 BOOST_AUTO_TEST_CASE(test_save_articles)
@@ -63,25 +60,36 @@ BOOST_AUTO_TEST_CASE(test_save_articles)
     auto result = db_inst.get_docs("vocabulary");
     bson_bld::from_bson(*(result.begin()), init_vocab);
 
-    vector<Article> articles;
     auto articles_xml = load_articles_xml("articles.xml");
 
     spdlog::info("building articles: {}", articles_xml.size());
-    std::set<string> generated_ids;
-
     ArticleParser article_parser{init_vocab};
+    vector<Article> articles;
     for (const auto& article_xml : articles_xml)
     {
         Article new_article;
         article_parser.parse_from_xml(article_xml, new_article);
-        if (new_article.is_valid())
-            articles.push_back(new_article);
+        set<string> stems;
+        bool valid = article_parser.tokenize_validate(new_article, stems);
+        if (valid)
+        {
+            init_vocab.add_stems(std::move(stems));
+            articles.push_back(std::move(new_article));
+        }
+    }
+    vector<ProcessedArticle> processed_articles;
+    for (auto && article : articles)
+    {
+        ProcessedArticle proc_article;
+        article_parser.process_tokens(article, proc_article);
+        processed_articles.push_back(std::move(proc_article));
     }
 
     db_inst.drop_collection("articles");
-    for (const auto& article : articles)
+    std::set<string> generated_ids;
+    for (const auto& proc_article : processed_articles)
     {
-        auto doc = bson_bld::to_bson(article);
+        auto doc = bson_bld::to_bson(proc_article);
         string id = db_inst.save_doc("articles", doc);
         generated_ids.insert(id);
     }
@@ -95,7 +103,7 @@ BOOST_AUTO_TEST_CASE(test_save_articles)
     }
 
     auto articles_db = load_articles(db_inst);
-    BOOST_REQUIRE_EQUAL(articles_db, articles);
+    BOOST_REQUIRE_EQUAL(articles_db, processed_articles);
 
     db_inst.drop_collection("articles");
 }

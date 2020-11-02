@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void BU_Clustering::create_clusters(const std::vector<Article>& articles)
+void BU_Clustering::create_clusters(const std::vector<ProcessedArticle>& articles)
 {
     unordered_map<size_t, vector<size_t>> topics_arts_map;
     build_dist_mat(articles, dlib::cosine_distance {});
@@ -25,7 +25,7 @@ void BU_Clustering::create_clusters(const std::vector<Article>& articles)
         cout << "topic\n";
         for (size_t art_idx : topic_art.second)
         {
-            cout << "title: " << articles[art_idx].title << endl;
+            cout << "title: " << articles[art_idx].meta_data.title << endl;
             for (size_t kidx : docs_keywords[art_idx])
             {
                 string keyword = lsa_proc_.get_word(kidx);
@@ -44,7 +44,7 @@ void BU_Clustering::create_clusters(const std::vector<Article>& articles)
     }
 }
 
-size_t BU_Clustering::add_to_clusters(const Article& article)
+size_t BU_Clustering::add_to_clusters(const ProcessedArticle& article)
 {
     //TODO
 }

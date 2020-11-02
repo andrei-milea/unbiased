@@ -23,26 +23,38 @@ BOOST_AUTO_TEST_CASE(test_lsa_svd)
 {
     LogRunTime log_runtime("test_lsa_svd");
     Vocabulary vocab { words_filename, stopwords_filename };
-    ArticleParser article_parser{vocab};
-    vector<Article> articles;
+    ArticleParser article_parser{ vocab };
     auto articles_xml = load_articles_xml("articles.xml");
+    std::unordered_set<string> titles;
+    std::vector<Article> articles;
     for (const auto& article_xml : articles_xml)
     {
         Article new_article;
         article_parser.parse_from_xml(article_xml, new_article);
-        if (new_article.is_valid())
+        if (titles.count(new_article.meta_data.title) == 0)
         {
-            spdlog::info("valid article {}", new_article.tokens.size());
-            article_parser.process_tokens(new_article);
-            articles.push_back(new_article);
+            titles.insert(new_article.meta_data.title);
+            set<string> stems;
+            bool valid = article_parser.tokenize_validate(new_article, stems);
+            if (valid)
+            {
+                vocab.add_stems(std::move(stems));
+                articles.push_back(std::move(new_article));
+            }
         }
-        else
-            spdlog::info("invalid article title: {}", new_article.title);
     }
-    log_runtime.log("built articles");
     spdlog::info("articles: {} valid articles: {}", articles_xml.size(), articles.size());
+    log_runtime.log("tokenized articles and loaded vocabulary");
+    std::vector<ProcessedArticle> processed_articles;
+    for (auto && article : articles)
+    {
+        ProcessedArticle proc_article;
+        article_parser.process_tokens(article, proc_article);
+        processed_articles.push_back(std::move(proc_article));
+    }
+    log_runtime.log("processed tokens");
     LSA lsa_processor { vocab };
-    lsa_processor.run_svd(articles);
+    lsa_processor.run_svd(processed_articles);
     log_runtime.log("finished running svd");
     //lsa_processor.print_term_doc_matrix();
     //lsa_processor.print_sigma();

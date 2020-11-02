@@ -25,14 +25,33 @@ void ArticleParser::parse_from_xml(const std::string& article_xml, Article& arti
     std::stringstream ss;
     ss << article_xml;
     read_xml(ss, pt);
-    article.url = pt.get<std::string>("article.url");
-    article.title = pt.get<std::string>("article.title");
-    article.date = pt.get<std::string>("article.date");
+    article.meta_data.url = pt.get<std::string>("article.url");
+    article.meta_data.title = pt.get<std::string>("article.title");
+    article.meta_data.date = pt.get<std::string>("article.date");
     auto authors_node = pt.get_child("article.authors");
     for (const auto& author_node : authors_node)
-        article.authors.emplace_back(author_node.second.data());
+        article.meta_data.authors.emplace_back(author_node.second.data());
 
-    std::string text = pt.get<std::string>("article.text");
-    article.length = text.size();
-    article.tokens = tokenize(text);
+    article.text = pt.get<std::string>("article.text");
+}
+
+bool ArticleParser::tokenize_validate(Article& article, std::set<std::string> &valid_stems, int32_t min_tokens, float invalid_tokens_threshold)
+{
+    article.tokens = tokenize(article.text);
+    if (article.tokens.size() < min_tokens)
+        return false;
+
+    int32_t unknown_tokens_no = 0;
+    for (const auto& token : article.tokens)
+    {
+        if (vocabulary_.is_valid_word(token))
+        {
+            std::string stem = boost::locale::to_lower(token);
+            trim_and_stem(stem);
+            valid_stems.insert(stem);
+        }
+        else if(!vocabulary_.is_stop_word(token) && token.size() > 1)
+            unknown_tokens_no++;
+    }
+    return float(unknown_tokens_no + 1.0) / article.tokens.size() <= invalid_tokens_threshold;
 }

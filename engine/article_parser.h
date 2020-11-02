@@ -3,6 +3,7 @@
 
 #include "article.h"
 #include "config.h"
+#include "utils/log_helper.h"
 #include "vocabulary.h"
 #include <boost/locale.hpp>
 #include <functional>
@@ -15,19 +16,24 @@ public:
 
     void parse_from_xml(const std::string& article_xml, Article& article);
 
+    bool tokenize_validate(Article& article, std::set<std::string> &valid_stems,
+                            int32_t min_tokens = 100, float invalid_tokens_threshold = 0.3);
+
     template <typename T = int32_t>
-    auto process_tokens(Article& article) const
+    auto process_tokens(Article& article, ProcessedArticle &processed_article) const
     {
+        processed_article.tokens_no = article.tokens.size();
+        processed_article.length = article.text.size();
+        processed_article.meta_data = std::move(article.meta_data);
         std::unordered_set<StemId> stem_ids;
         T shingles{};
-        article.tf.resize(vocabulary_.stems_no(), 0.0);
+        processed_article.stem_ids.reserve(article.tokens.size());
 
         for (size_t tidx = 0; tidx < article.tokens.size(); tidx++)
         {
-            const auto &token = article.tokens[tidx];
-            if (!vocabulary_.is_stop_word(token) && token.size() >= 2)
+            std::string lower_token = boost::locale::to_lower(article.tokens[tidx]);
+            if (!vocabulary_.is_stop_word(lower_token) && lower_token.size() >= 2 /* TODO&& token is a word*/)
             {
-                std::string lower_token = boost::locale::to_lower(token);
                 auto stem = lower_token;
                 trim_and_stem(stem);
                 StemId stem_id = 0;
@@ -41,11 +47,11 @@ public:
                     }
                     vocabulary_.add_token(stem_id, lower_token);
                     //compute term frequency
-                    article.tf[stem_id]++;
-                    article.ids_tokens_map[stem_id] = tidx;
+                    processed_article.stem_ids.push_back(stem_id);
+                    processed_article.ids_tokens_map[stem_id] = tidx;
                 }
                 else
-                    article.unknown_tokens_no++;
+                    spdlog::info("invalid stem detected: {} from token {}", stem, lower_token);
             }
             else
             {

@@ -19,24 +19,35 @@ dlib::matrix<double> compute_term_doc_mat()
 {
     Vocabulary vocab { words_filename, stopwords_filename };
     ArticleParser article_parser{ vocab };
-    vector<Article> articles;
     auto articles_xml = load_articles_xml("articles.xml");
+    std::unordered_set<string> titles;
+    std::vector<Article> articles;
     for (const auto& article_xml : articles_xml)
     {
         Article new_article;
         article_parser.parse_from_xml(article_xml, new_article);
-        if (new_article.is_valid())
+        if (titles.count(new_article.meta_data.title) == 0)
         {
-            articles.push_back(new_article);
-            article_parser.process_tokens(new_article);
+            titles.insert(new_article.meta_data.title);
+            set<string> stems;
+            bool valid = article_parser.tokenize_validate(new_article, stems);
+            if (valid)
+            {
+                vocab.add_stems(std::move(stems));
+                articles.push_back(std::move(new_article));
+            }
         }
-        else
-            cout << "title: " << new_article.title << endl;
+    }
+    std::vector<ProcessedArticle> processed_articles;
+    for (auto && article : articles)
+    {
+        ProcessedArticle proc_article;
+        article_parser.process_tokens(article, proc_article);
+        processed_articles.push_back(std::move(proc_article));
     }
 
-    cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
     LSA lsa_processor { vocab };
-    lsa_processor.build_term_doc_matrix(articles, 0.0);
+    lsa_processor.build_term_doc_matrix(processed_articles, 3);
     return lsa_processor.get_term_doc_matrix();
 }
 
@@ -47,24 +58,35 @@ pair<dlib::matrix<double>, dlib::matrix<double>> compute_lsa_mat()
     {
         Vocabulary vocab { words_filename, stopwords_filename };
         ArticleParser article_parser{ vocab };
-        std::vector<Article> articles;
         auto articles_xml = load_articles_xml("articles.xml");
+        std::unordered_set<string> titles;
+        std::vector<Article> articles;
         for (const auto& article_xml : articles_xml)
         {
             Article new_article;
             article_parser.parse_from_xml(article_xml, new_article);
-            if (new_article.is_valid())
+            if (titles.count(new_article.meta_data.title) == 0)
             {
-                articles.push_back(new_article);
-                article_parser.process_tokens(new_article);
+                titles.insert(new_article.meta_data.title);
+                set<string> stems;
+                bool valid = article_parser.tokenize_validate(new_article, stems);
+                if (valid)
+                {
+                    vocab.add_stems(std::move(stems));
+                    articles.push_back(std::move(new_article));
+                }
             }
-            else
-                cout << "title: " << new_article.title << endl;
+        }
+        std::vector<ProcessedArticle> processed_articles;
+        for (auto && article : articles)
+        {
+            ProcessedArticle proc_article;
+            article_parser.process_tokens(article, proc_article);
+            processed_articles.push_back(std::move(proc_article));
         }
 
-        cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
         LSA lsa_processor { vocab };
-        lsa_processor.run_svd(articles);
+        lsa_processor.run_svd(processed_articles);
         res.first = lsa_processor.get_terms_concepts_mat();
         res.second = lsa_processor.get_docs_concepts_mat();
     }
@@ -83,29 +105,41 @@ std::vector<set<string>> compute_topics(int64_t concepts_no, int64_t terms_no)
     {
         Vocabulary vocab { words_filename, stopwords_filename };
         ArticleParser article_parser{ vocab };
-        std::vector<Article> articles;
         auto articles_xml = load_articles_xml("articles.xml");
-        std::set<string> titles;
+        std::unordered_set<string> titles;
+        std::vector<Article> articles;
         for (const auto& article_xml : articles_xml)
         {
             Article new_article;
             article_parser.parse_from_xml(article_xml, new_article);
-            if (titles.count(new_article.title) == 0 && new_article.is_valid())
+            if (titles.count(new_article.meta_data.title) == 0)
             {
-                titles.insert(new_article.title);
-                article_parser.process_tokens(new_article);
-                articles.push_back(new_article);
+                titles.insert(new_article.meta_data.title);
+                set<string> stems;
+                bool valid = article_parser.tokenize_validate(new_article, stems);
+                if (valid)
+                {
+                    vocab.add_stems(std::move(stems));
+                    articles.push_back(std::move(new_article));
+                }
             }
         }
-        log_runtime.log("loading_articles");
+        log_runtime.log("parsing articles and loading vocab");
+        std::vector<ProcessedArticle> processed_articles;
+        for (auto && article : articles)
+        {
+            ProcessedArticle proc_article;
+            article_parser.process_tokens(article, proc_article);
+            processed_articles.push_back(std::move(proc_article));
+        }
+        log_runtime.log("processing articles");
 
-        //cout << "articles: " << articles_xml.size() << " valid articles: " << articles.size() << "\n";
         LSA lsa_processor { vocab };
-        lsa_processor.run_svd(articles, 5);
+        lsa_processor.run_svd(processed_articles);
         lsa_processor.print_sigma();
-        log_runtime.log("run_svd");
+        log_runtime.log("runnig svd");
 
-        res = lsa_processor.get_top_concepts(articles, concepts_no, terms_no);
+        res = lsa_processor.get_top_concepts(processed_articles, concepts_no, terms_no);
         log_runtime.log("get_top_concepts");
     }
     catch (const std::exception& ex)

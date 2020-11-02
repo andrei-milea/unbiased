@@ -14,6 +14,10 @@ public:
     Vocabulary() = default;
     Vocabulary(const std::string& words_filename, const std::string& stopwords_filename);
 
+    Vocabulary(const Vocabulary& vocab) = delete;
+    Vocabulary(Vocabulary&& vocab) = delete;
+    Vocabulary& operator=(const Vocabulary& vocab) = delete;
+
     void increase_stem_freq(StemId stem_id) const noexcept
     {
         assert(stem_id < stems_freq_.size());
@@ -70,6 +74,11 @@ public:
         return stems_.size();
     }
 
+    size_t words_no() const noexcept
+    {
+        return words_.size();
+    }
+
     size_t stopwords_no() const noexcept
     {
         return stop_words_.size();
@@ -84,6 +93,11 @@ public:
     {
         std::vector<uint64_t> res(stems_freq_.begin(), stems_freq_.end());
         return res;
+    }
+
+    void add_stems(std::set<std::string> &&stems)
+    {
+        stems_.merge(stems);
     }
 
     void add_token(StemId stem_id, const std::string& token) const
@@ -101,8 +115,14 @@ public:
         return stems_;
     }
 
+    bool is_valid_word(const std::string& word) const noexcept
+    {
+        return words_.count(word);
+    }
+
 private:
     std::set<std::string> stems_;
+    std::unordered_set<std::string> words_;
     std::unordered_set<std::string> stop_words_;
     mutable std::array<std::atomic<int32_t>, MAX_STEMS_NO> stems_freq_;
     mutable StemIdTokensRCUMap stemid_tokens_map_;

@@ -16,11 +16,11 @@ namespace bson_bld
 
 bson_doc to_bson(const Vocabulary& vocab, bool only_freq = false);
 
-bson_doc to_bson(const Article& article);
+bson_doc to_bson(const ProcessedArticle& article);
 
 void from_bson(const bson_doc_view& doc, Vocabulary& vocab);
 
-void from_bson(const bson_doc_view& doc, Article& article);
+void from_bson(const bson_doc_view& doc, ProcessedArticle& article);
 
 void from_bson(const bson_doc_view& doc, std::pair<std::string, Signature>& art_sig);
 

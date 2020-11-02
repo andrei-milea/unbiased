@@ -23,11 +23,11 @@ Pipeline::Pipeline(size_t buff_max_size)
     load_vocabulary(Pipeline::mongodb_inst_, vocabulary_);
 }
 
-void Pipeline::process_batch(const std::vector<Article> &articles)
+/*void Pipeline::process_batch(const std::vector<Article> &articles)
 {
     processed_articles_ += articles.size();
     clustering_processor_->create_clusters(articles);
-}
+}*/
 
 void Pipeline::process_batch(const string& filename_path)
 {
@@ -39,23 +39,36 @@ void Pipeline::process_batch(const string& filename_path)
         Article new_article;
         article_parser_.parse_from_xml(article_xml, new_article);
 
-        if(!new_article.is_valid(0.17))
+        set<string> stems;
+        bool valid = article_parser_.tokenize_validate(new_article, stems);
+        if (valid)
         {
-            save_invalid_url(mongodb_inst_, new_article.url);
-            spdlog::info("invalid article url - {}, title - {}", new_article.url, new_article.title);
+            vocabulary_.add_stems(std::move(stems));
+            articles.push_back(std::move(new_article));
+        }
+        else
+        {
+            save_invalid_url(mongodb_inst_, new_article.meta_data.url);
+            spdlog::info("invalid article url - {}, title - {}", new_article.meta_data.url, new_article.meta_data.title);
             continue;
         }
-
-        auto shingles = article_parser_.process_tokens<set<int32_t>>(new_article);
-        new_article.signature = minhash_.compute_signature(shingles);
-        string id = save_article(Pipeline::mongodb_inst_, new_article);
-        if(!is_duplicate(make_pair(id, new_article.signature)))
-            articles.push_back(new_article);
     }
 
+    spdlog::info("articles: {} valid articles: {}", articles_xml.size(), articles.size());
     processed_articles_ += articles.size();
-    spdlog::info("articles:  {}, valid articles: {}", articles_xml.size(), articles.size());
-    clustering_processor_->create_clusters(articles);
+    std::vector<ProcessedArticle> processed_articles;
+    for (size_t idx = 0; idx < articles.size(); idx++)
+    {
+        ProcessedArticle proc_article;
+        auto shingles = article_parser_.process_tokens<set<int32_t>>(articles[idx], proc_article);
+
+        string id = save_article(Pipeline::mongodb_inst_, proc_article);
+        proc_article.signature = minhash_.compute_signature(shingles);
+        if(!is_duplicate(make_pair(id, proc_article.signature)))
+            processed_articles.push_back(std::move(proc_article));
+    }
+
+    clustering_processor_->create_clusters(processed_articles);
 }
 
 void Pipeline::start_processing_queue(uint32_t threads_no)
@@ -90,29 +103,36 @@ void Pipeline::enqueue_article(const std::string& url)
 
 void Pipeline::process_article(const string& article_str) noexcept
 {
-    Article article;
+    Article new_article;
     try
     {
-        article_parser_.parse_from_xml(article_str, article);
-        if(!article.is_valid(0.17))
+        article_parser_.parse_from_xml(article_str, new_article);
+        set<string> stems;
+        bool valid = article_parser_.tokenize_validate(new_article, stems);
+        if (valid)
         {
-            save_invalid_url(Pipeline::mongodb_inst_, article.url);
-            spdlog::info("invalid article url - {}, title - {}", article.url, article.title);
-            return;
-        }
-        auto shingles = article_parser_.process_tokens<set<int32_t>>(article);
-        article.signature = minhash_.compute_signature(shingles);
-        string id = save_article(Pipeline::mongodb_inst_, article);
-        if(!is_duplicate(make_pair(id, article.signature)))
-        {
-            clustering_processor_->add_to_clusters(article);
+            vocabulary_.add_stems(std::move(stems));
+            ProcessedArticle proc_article;
+            auto shingles = article_parser_.process_tokens<set<int32_t>>(new_article, proc_article);
+
+            string id = save_article(Pipeline::mongodb_inst_, proc_article);
+            proc_article.signature = minhash_.compute_signature(shingles);
+            if(is_duplicate(make_pair(id, proc_article.signature)))
+                return;
+
+            clustering_processor_->add_to_clusters(proc_article);
             processed_articles_++;
+        }
+        else
+        {
+            save_invalid_url(mongodb_inst_, new_article.meta_data.url);
+            spdlog::info("invalid article url - {}, title - {}", new_article.meta_data.url, new_article.meta_data.title);
         }
     }
     catch (const std::exception& ex)
     {
         spdlog::warn("exception {} while processing article url - {}, title - {}",
-                ex.what(), article.url, article.title);
+                ex.what(), new_article.meta_data.url, new_article.meta_data.title);
     }
 }
 

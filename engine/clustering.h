@@ -20,9 +20,9 @@ class Clustering
 public:
     virtual ~Clustering() = default;
 
-    virtual void create_clusters(const std::vector<Article>& articles) = 0;
+    virtual void create_clusters(const std::vector<ProcessedArticle>& articles) = 0;
 
-    virtual size_t add_to_clusters(const Article& article) = 0;
+    virtual size_t add_to_clusters(const ProcessedArticle& article) = 0;
 
     const std::vector<Cluster>& get_clusters() const noexcept
     {

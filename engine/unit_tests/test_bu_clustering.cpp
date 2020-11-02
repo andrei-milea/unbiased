@@ -28,16 +28,29 @@ BOOST_AUTO_TEST_CASE(test_clustering)
     {
         Article new_article;
         article_parser.parse_from_xml(article_xml, new_article);
-        if (new_article.is_valid())
+        set<string> stems;
+        bool valid = article_parser.tokenize_validate(new_article, stems);
+        if (valid)
         {
-            article_parser.process_tokens(new_article);
-            articles.push_back(new_article);
+            vocab.add_stems(std::move(stems));
+            articles.push_back(std::move(new_article));
         }
     }
+
+    log_runtime.log("parsed articles");
     spdlog::info("articles: {} valid articles: {}", articles_xml.size(), articles.size());
-    log_runtime.log("built articles");
+
+
+    vector<ProcessedArticle> processed_articles;
+    for (auto && article : articles)
+    {
+        ProcessedArticle proc_article;
+        article_parser.process_tokens(article, proc_article);
+        processed_articles.push_back(std::move(proc_article));
+    }
+    log_runtime.log("processed articles");
 
     BU_Clustering clust_proc { vocab };
-    clust_proc.create_clusters(articles);
+    clust_proc.create_clusters(processed_articles);
     log_runtime.log("create_clusters");
 }

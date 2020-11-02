@@ -14,13 +14,13 @@ public:
     {
     }
 
-    void create_clusters(const std::vector<Article>& articles) override;
+    void create_clusters(const std::vector<ProcessedArticle>& articles) override;
 
-    size_t add_to_clusters(const Article& article) override;
+    size_t add_to_clusters(const ProcessedArticle& article) override;
 
 protected:
     template <class FUNC>
-    void build_dist_mat(const std::vector<Article>& articles, FUNC&& dist_fnc)
+    void build_dist_mat(const std::vector<ProcessedArticle>& articles, FUNC&& dist_fnc)
     {
         lsa_proc_.run_svd(articles);
         const auto& docs_concepts_mat = lsa_proc_.get_docs_concepts_mat();

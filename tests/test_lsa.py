@@ -15,6 +15,8 @@ from gensim.corpora.textcorpus import TextCorpus
 from gensim import utils
 from gensim.parsing.preprocessing import preprocess_string, strip_punctuation, strip_numeric
 
+from gensim.corpora import WikiCorpus
+
 import term_doc_mat
 sys.path.insert(1, '../scripts')
 from article import from_xml
@@ -103,9 +105,13 @@ def test_gensim_one():
         for word in topic:
             print('word {}'.format(word))
 
-    cm = CoherenceModel(topics=computed_topics, corpus=curr_corpus, dictionary=curr_dictionary, coherence='u_mass')
-    coherence = cm.get_coherence()
-    print('umass coherence score {} for {} topics with size {}'.format(coherence, topics_no, topic_size))
+    cm_umass = CoherenceModel(topics=computed_topics, corpus=curr_corpus, dictionary=curr_dictionary, coherence='u_mass')
+
+    wiki = WikiCorpus('/home/proj/unbiased/data/enwiki-latest-pages-articles.xml.bz2', dictionary=curr_dictionary)
+    wiki_texts = wiki.sample_texts(100, 5, 10)
+    texts.append(wiki_texts)
+    cm_uci = CoherenceModel(topics=computed_topics, texts = texts, dictionary=curr_dictionary, coherence='c_uci')
+    print('umass coherence score u_mass {}, c_uci {},  for {} topics with size {}'.format(cm_umass.get_coherence(), cm_uci.get_coherence(), topics_no, topic_size))
  
 
 def test_lsa_one():
@@ -122,7 +128,7 @@ def test_lsa_one():
         for word in topic:
             print('word {}'.format(word))
 
-    cm = CoherenceModel(topics=computed_topics, corpus=curr_corpus, dictionary=curr_dictionary, coherence='u_mass')
-    coherence = cm.get_coherence()
-    print('umass coherence score {} for {} topics with size {}'.format(coherence, topics_no, topic_size))
+    cm_umass = CoherenceModel(topics=computed_topics, corpus=curr_corpus, dictionary=curr_dictionary, coherence='u_mass')
+    cm_uci = CoherenceModel(topics=computed_topics, texts = texts, dictionary=curr_dictionary, coherence='c_uci')
+    print('umass coherence score u_mass {}, c_uci {},  for {} topics with size {}'.format(cm_umass.get_coherence(), cm_uci.get_coherence(), topics_no, topic_size))
 

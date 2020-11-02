@@ -24,7 +24,7 @@ public:
     }
 
     //compute term-doc matrix and clusters to initialize the pipeline for further processing
-    void process_batch(const std::vector<Article> &articles);
+    //void process_batch(const std::vector<Article> &articles);
     void process_batch(const std::string& filename_path);
 
 

@@ -23,7 +23,7 @@ inline void update_vocab_freq(MongoDb& mongodb_inst, Vocabulary& vocab)
     mongodb_inst.update_doc("vocabulary", doc);
 }
 
-inline std::string save_article(MongoDb& mongodb_inst, const Article& art)
+inline std::string save_article(MongoDb& mongodb_inst, const ProcessedArticle& art)
 {
     auto doc = bson_bld::to_bson(art);
     return mongodb_inst.save_doc("articles", doc);

@@ -3,7 +3,10 @@
 #include "../utils/stl_ext.h"
 #include "../utils/tokenize.h"
 #include "../utils/log_helper.h"
+
+#define private public
 #include "../vocabulary.h"
+
 #include "boost/test/included/unit_test.hpp"
 #include <thread>
 
@@ -18,7 +21,7 @@ RegisterUnitTestLogger register_logger{BOOST_TEST_MODULE};
 BOOST_AUTO_TEST_CASE(test_tokens_rcu_map)
 {
     Vocabulary vocab { words_filename, stopwords_filename };
-    BOOST_REQUIRE(vocab.stems_no() == 152588);
+    BOOST_REQUIRE_EQUAL(vocab.words_no(), 210444);
 
     StemIdTokensRCUMap tokens_rcu_map;
 
@@ -86,7 +89,7 @@ BOOST_AUTO_TEST_CASE(test_tokens_rcu_map)
 BOOST_AUTO_TEST_CASE(test_stop_words)
 {
     Vocabulary vocab { words_filename, stopwords_filename };
-    BOOST_REQUIRE(vocab.stems_no() == 152588);
+    BOOST_REQUIRE(vocab.words_no() == 210444);
     BOOST_REQUIRE(vocab.stopwords_no() == 153);
     BOOST_REQUIRE(vocab.is_stop_word("to"));
     const auto& stop_words = vocab.get_stop_words();
@@ -98,8 +101,17 @@ BOOST_AUTO_TEST_CASE(test_stop_words)
 BOOST_AUTO_TEST_CASE(test_word_freq)
 {
     Vocabulary vocab { words_filename, stopwords_filename };
-    BOOST_REQUIRE(vocab.stems_no() == 152588);
+    BOOST_REQUIRE(vocab.words_no() == 210444);
     BOOST_REQUIRE(vocab.stopwords_no() == 153);
+
+    set<string> stems;
+    for (const auto& word : vocab.words_)
+    {
+        string stem = word;
+        trim_and_stem(stem);
+        stems.insert(stem);
+    }
+    vocab.add_stems(std::move(stems));
 
     StemId id1 = 0, id2 = 0, id3 = 0;
     bool res = vocab.get_stem_id("tabl", id1);

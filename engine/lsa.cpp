@@ -7,27 +7,30 @@
 using namespace dlib;
 using namespace std;
 
-void LSA::build_term_doc_matrix(const std::vector<Article>& articles, float tf_threshold)
+void LSA::build_term_doc_matrix(const std::vector<ProcessedArticle>& articles, int32_t tf_thresold)
 {
     assert(articles.size() > 0);
     articles_no_ = double(articles.size());
-    build_vocab_to_mat_idx(articles, tf_threshold);
-    init_term_doc_matrix(terms_mat_to_vocab_.size(), articles.size());
-    spdlog::info("building term_doc_matrix {} x {}", terms_mat_to_vocab_.size(), articles.size());
+    init_term_doc_matrix(vocabulary_.stems_no(), articles.size());
+
+    spdlog::info("building term_doc_matrix {} x {}", vocabulary_.stems_no(), articles.size());
     for (size_t cidx = 0; cidx < articles.size(); cidx++)
     {
-        for (size_t ridx = 0; ridx < terms_mat_to_vocab_.size(); ridx++)
+        // compute term frequency
+        std::vector<int32_t> tf(vocabulary_.stems_no(), 0);
+        for (StemId stem : articles[cidx].stem_ids)
         {
-            size_t vocab_idx = terms_mat_to_vocab_.at(ridx);
-            assert(articles[cidx].tokens.size() != 0);
-            if (articles[cidx].tf[vocab_idx] != 0.0)
-            {
+            assert(stem <= vocabulary_.stems_no());
+            tf[stem]++;
+        }
 
-                assert(vocabulary_.get_stem_freq(vocab_idx) != 0);
-                term_doc_mat_(ridx, cidx) = articles[cidx].tf[vocab_idx] / articles[cidx].tokens.size();
-                    //* log(articles_no_ / vocabulary_.get_stem_freq(vocab_idx));
-                assert(!isnan(term_doc_mat_(ridx, cidx)));
-            }
+        for (size_t ridx = 0; ridx < vocabulary_.stems_no(); ridx++)
+        {
+            assert(articles[cidx].tokens_no != 0);
+            if (tf[ridx] > tf_thresold)
+                term_doc_mat_(ridx, cidx) = tf[ridx] / articles[cidx].tokens_no;
+                //* log(articles_no_ / vocabulary_.get_stem_freq(ridx));
+            assert(!isnan(term_doc_mat_(ridx, cidx)));
         }
     }
 }
@@ -57,10 +60,10 @@ void LSA::print_sigma() const
     }
 }
 
-void LSA::run_svd(const std::vector<Article>& articles, float tf_threshold)
+void LSA::run_svd(const std::vector<ProcessedArticle>& articles)
 {
-    LogRunTime log_runtime("LSA::run_svd");
-    build_term_doc_matrix(articles, tf_threshold);
+    LogRunTimeRAII log_runtime("LSA::run_svd");
+    build_term_doc_matrix(articles, 3);
     svd(term_doc_mat_, U_, sigma_, V_);
 }
 
@@ -75,30 +78,27 @@ std::vector<std::set<size_t>> LSA::get_docs_keywords(float doc_threshold, float 
             {
                 for (auto term_idx = 0; term_idx < U_.nr(); term_idx++)
                     if (U_(term_idx, concept_idx) > term_threshold)
-                        docs_keywords[doc_idx].insert(terms_mat_to_vocab_[term_idx]);
+                        docs_keywords[doc_idx].insert(term_idx);
             }
         }
     }
     return docs_keywords;
 }
 
-dlib::matrix<double> LSA::foldin_doc(const Article& art) const
+dlib::matrix<double> LSA::foldin_doc(const ProcessedArticle& art) const
 {
     //TODO
     dlib::matrix<double> doc_vec;
-    for (size_t ridx = 0; ridx < terms_mat_to_vocab_.size(); ridx++)
+    /*
+    for (size_t ridx = 0; ridx < vocabulary_.stems_no(); ridx++)
     {
-        size_t vocab_idx = terms_mat_to_vocab_.at(ridx);
-        if (art.tf[vocab_idx] != 0.0)
-            doc_vec(ridx) = art.tf[vocab_idx] / art.tokens.size()
-                * log(articles_no_ / vocabulary_.get_stem_freq(vocab_idx));
-        else
-            doc_vec(ridx) = 0.0;
-    }
+        doc_vec(ridx) = art.tf[vocab_idx] / art.tokens_no
+            * log(articles_no_ / vocabulary_.get_stem_freq(vocab_idx));
+    }*/
     return doc_vec;
 }
 
-void LSA::print_top_concepts(const std::vector<Article>& articles, double threshold) const
+/*void LSA::print_top_concepts(const std::vector<ProcessedArticle>& articles, double threshold) const
 {
     unordered_map<size_t, std::vector<size_t>> concept_doc_map;
     unordered_map<size_t, std::vector<size_t>> concept_term_map;
@@ -143,12 +143,12 @@ void LSA::print_top_concepts(const std::vector<Article>& articles, double thresh
         }
         cout << endl;
     }
-}
+}*/
 
-std::vector<std::set<string>> LSA::get_top_concepts(const std::vector<Article>& articles, int64_t concepts, int64_t terms) const
+std::vector<std::set<string>> LSA::get_top_concepts(const std::vector<ProcessedArticle>& articles, int64_t concepts, int64_t terms) const
 {
     spdlog::info("LSA::get_top_concepts U {} x {}, concepts_no {}, terms no {}", U_.nr(), U_.nc(), concepts, terms);
-    LogRunTime log_runtime("LSA::get_top_concepts");
+    LogRunTimeRAII log_runtime("LSA::get_top_concepts");
     //rows are terms, cols are concepts
     concepts = min(concepts, U_.nc());
     std::vector<std::set<string>> concepts_vec;
@@ -159,7 +159,7 @@ std::vector<std::set<string>> LSA::get_top_concepts(const std::vector<Article>& 
 
         for (long row = 0; row < U_.nr(); row++)
         {
-            auto tokens_set = vocabulary_.get_tokens(terms_mat_to_vocab_[row]);
+            auto tokens_set = vocabulary_.get_tokens(row);
             assert(tokens_set && !tokens_set->empty());
             string term = *(tokens_set->begin());
             concept_terms_vals.push_back(make_pair(term, U_(row, col)));
