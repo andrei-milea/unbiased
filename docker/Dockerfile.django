@@ -1,0 +1,34 @@
+FROM archlinux
+
+RUN pacman -Syu --noconfirm
+
+USER root
+
+RUN pacman -S gcc --noconfirm
+RUN pacman -S python-pip --noconfirm
+RUN pacman -S postgresql-libs --noconfirm
+RUN pacman -S python-django --noconfirm
+RUN pacman -S iputils --noconfirm
+RUN pacman -S sudo --noconfirm
+RUN pacman -S net-tools --noconfirm
+
+RUN echo 'root:Docker!' | chpasswd
+RUN useradd -m -G root docker
+RUN useradd -m -G root postgres
+
+USER postgres
+
+RUN pip install psycopg2 && \
+    pip install social-auth-app-django && \
+    pip install psycopg2-binary
+
+WORKDIR /web_backend
+
+COPY web/backend .
+
+EXPOSE 8000
+RUN python manage.py makemigrations backend
+RUN python manage.py migrate
+#RUN python manage.py runserver 0.0.0.0:8000
+ENTRYPOINT ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+

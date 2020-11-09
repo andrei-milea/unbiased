@@ -1,4 +1,6 @@
 -----Postgresql commands:
+systemctl stop postgresql.service
+systemctl stop postgresql.service
 
 passwd postgres
 sudo -u postgres psql postgres
