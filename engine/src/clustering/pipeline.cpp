@@ -1,5 +1,5 @@
 #include "pipeline.h"
-#include "utils/article_utils.h"
+#include "article_utils.h"
 #include "mongodb_helper.h"
 #include "article_parser.h"
 #include "zmq_helper.h"
@@ -96,9 +96,9 @@ void Pipeline::enqueue_article(const std::string& url)
         if (!ec)
             process_article(buffer_str);
         else
-            std::cout << ec.message() << std::endl;
+            spdlog::info("Pipeline::enqueue_article error processing article - {}", ec.message());
     };
-    boost::asio::async_read(apipe, boost::asio::buffer(&buffer_str[0], buffer_str.size()), get_res);
+    //boost::asio::async_read(apipe, boost::asio::buffer(&buffer_str[0], buffer_str.size()), get_res);
 }
 
 void Pipeline::process_article(const string& article_str) noexcept

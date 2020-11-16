@@ -1,6 +1,6 @@
-#include "pipeline.h"
+#include "../../include/clustering/pipeline.h"
 #include "config.h"
-#include "utils/log_helper.h"
+#include "log_helper.h"
 
 #include <exception>
 #include <zmq.hpp>
@@ -12,7 +12,7 @@ int main()
 {
     try
     {
-        spdlog::set_default_logger(std::make_shared<spdlog::logger>("runtime_logger", std::make_shared<spdlog::sinks::daily_file_sink_mt>("engine.log", 23, 59)));
+        spdlog::set_default_logger(std::make_shared<spdlog::logger>("runtime_logger", std::make_shared<spdlog::sinks::daily_file_sink_mt>("clustering.log", 23, 59)));
         Pipeline pipeline{Config::get().scrapper_buff_size};
         pipeline.process_batch("articles.xml");
         pipeline.start_processing_queue(3);
@@ -26,12 +26,12 @@ int main()
             zmq::message_t message;
             receiver.recv(message);
             std::string message_str(static_cast<char*>(message.data()), message.size());
-	    pipeline.enqueue_article(message_str);
+	        pipeline.enqueue_article(message_str);
         }
     }
     catch (const std::exception& ex)
     {
-        spdlog::error("quiting, engine exception: {}", ex.what());
+        spdlog::error("quiting, clustering exception: {}", ex.what());
     }
     return 0;
 }

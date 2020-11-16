@@ -1,9 +1,12 @@
 #ifndef _LSA_H
 #define _LSA_H
 
-#define DLIB_USE_LAPACK //use LAPACK library
+//use lapack library
+#ifndef DLIB_USE_LAPACK
+#define DLIB_USE_LAPACK
+#endif
 
-#include "utils/log_helper.h"
+#include "log_helper.h"
 #include "article.h"
 #include "vocabulary.h"
 #include <dlib/matrix.h>

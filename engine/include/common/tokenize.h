@@ -1,7 +1,7 @@
 #ifndef _TOKENIZE_H
 #define _TOKENIZE_H
 
-#include "stemmer/porter2_stemmer.h"
+#include "porter2_stemmer.h"
 #include <boost/locale.hpp>
 #include <vector>
 #include <string>

@@ -3,9 +3,11 @@
 
 #include "article.h"
 #include "config.h"
-#include "utils/log_helper.h"
+#include "log_helper.h"
 #include "vocabulary.h"
+#include "minhash.h"
 #include <boost/locale.hpp>
+#include <boost/functional/hash.hpp>
 #include <functional>
 #include <type_traits>
 

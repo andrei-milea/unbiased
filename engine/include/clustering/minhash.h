@@ -1,14 +1,14 @@
 #ifndef _MINHASH_H
 #define _MINHASH_H
 
-#include "utils/murmur3.h"
+#include "config.h"
+#include "murmur3.h"
 #include <cstdint>
 #include <set>
 #include <array>
 
 constexpr int32_t MINHASH_RANGE_MAX = 100000000;
-constexpr int32_t SIGNATURE_SIZE = 100;
-using Signature = std::array<int32_t, SIGNATURE_SIZE>;
+
 
 //class that computes the minhash signature
 //for a given set of shingles

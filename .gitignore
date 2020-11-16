@@ -1,0 +1,11 @@
+*.log
+*.o
+*.so
+tests/*.o
+tests/*.txt
+tests/*.dat
+bin/*
+data/*
+build/*
+*/__pycache__/*
+engine/tags

@@ -1,12 +1,12 @@
 #ifndef _PIPELINE_H
 #define _PIPELINE_H
 
-#include "utils/log_helper.h"
+#include "log_helper.h"
 #include "article.h"
 #include "vocabulary.h"
-#include "mongodb.h"
+#include "mongodb_helper.h"
 #include "bu_clustering.h"
-#include "article_dedup.h"
+//#include "article_dedup.h"
 #include <zmq.hpp>
 #include <boost/asio.hpp>
 #include <boost/process.hpp>

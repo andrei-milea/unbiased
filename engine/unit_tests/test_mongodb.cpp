@@ -1,15 +1,15 @@
 #define BOOST_TEST_MODULE "test_mongodb"
 #define protected public
 
-#include "../article.h"
-#include "../article_parser.h"
-#include "../mongodb_helper.h"
-#include "../config.h"
-#include "../utils/log_helper.h"
-#include "../bson_builder.h"
-#include "../mongodb.h"
-#include "../utils/article_utils.h"
-#include "../utils/stl_ext.h"
+#include "article.h"
+#include "article_parser.h"
+#include "mongodb_helper.h"
+#include "config.h"
+#include "log_helper.h"
+#include "bson_builder.h"
+#include "mongodb.h"
+#include "article_utils.h"
+#include "stl_ext.h"
 #include "boost/test/included/unit_test.hpp"
 #include <chrono>
 #include <vector>

@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE "test_min_hash"
 
-#include "../utils/log_helper.h"
-#include "../minhash.h"
+#include "log_helper.h"
+#include "minhash.h"
 #include "boost/test/included/unit_test.hpp"
 #include <random>
 #include <set>

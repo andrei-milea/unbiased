@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE "test_lsa"
 
-#include "../vocabulary.h"
-#include "../lsa.h"
-#include "../article_parser.h"
-#include "../utils/article_utils.h"
-#include "../utils/log_helper.h"
-#include "../utils/perf_clock.h"
+#include "vocabulary.h"
+#include "lsa.h"
+#include "article_parser.h"
+#include "article_utils.h"
+#include "log_helper.h"
+#include "perf_clock.h"
 
 #include "boost/test/included/unit_test.hpp"
 #include <fstream>

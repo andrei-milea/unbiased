@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE "test_vocabulary"
 
-#include "../utils/stl_ext.h"
-#include "../utils/tokenize.h"
-#include "../utils/log_helper.h"
+#include "stl_ext.h"
+#include "tokenize.h"
+#include "log_helper.h"
 
 #define private public
-#include "../vocabulary.h"
+#include "vocabulary.h"
 
 #include "boost/test/included/unit_test.hpp"
 #include <thread>

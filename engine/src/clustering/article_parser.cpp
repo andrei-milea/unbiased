@@ -1,5 +1,5 @@
 #include "article_parser.h"
-#include "utils/tokenize.h"
+#include "tokenize.h"
 #include <boost/locale.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>

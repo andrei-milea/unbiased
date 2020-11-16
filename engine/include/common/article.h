@@ -1,7 +1,7 @@
 #ifndef _ARTICLE_H
 #define _ARTICLE_H
 
-#include "minhash.h"
+#include "config.h"
 #include "vocabulary.h"
 #include <iostream>
 #include <set>

@@ -9,7 +9,7 @@
 #include <zmq.hpp>
 #include <sstream>
 #include <utility> 
-#include "minhash.h"
+#include "config.h"
 
 
 //serialize id, signature to string

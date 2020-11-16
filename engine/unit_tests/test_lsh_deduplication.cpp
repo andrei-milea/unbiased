@@ -1,8 +1,8 @@
 #define BOOST_TEST_MODULE "test_lsh_deduplication"
 
-#include "../utils/log_helper.h"
-#include "../minhash.h"
-#include "../lsh_deduplication.h"
+#include "config.h"
+#include "log_helper.h"
+#include "lsh_deduplication.h"
 #include "boost/test/included/unit_test.hpp"
 #include <random>
 #include <vector>

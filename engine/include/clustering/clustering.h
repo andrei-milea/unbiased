@@ -2,7 +2,7 @@
 #define _CLUSTERING_H
 
 #include "article.h"
-#include "utils/tokenize.h"
+#include "tokenize.h"
 #include "article_parser.h"
 #include <string>
 #include <vector>

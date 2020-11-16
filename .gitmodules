@@ -1,0 +1,12 @@
+[submodule "engine/extern/mongocxx"]
+	path = engine/extern/mongocxx
+	url = https://github.com/mongodb/mongo-cxx-driver.git
+[submodule "engine/extern/dlib"]
+	path = engine/extern/dlib
+	url = https://github.com/davisking/dlib.git
+[submodule "engine/extern/murmur3"]
+	path = engine/extern/murmur3
+	url = https://github.com/PeterScott/murmur3.git
+[submodule "engine/extern/porter2_stemmer"]
+	path = engine/extern/porter2_stemmer
+	url = https://github.com/smassung/porter2_stemmer.git

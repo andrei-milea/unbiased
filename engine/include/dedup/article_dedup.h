@@ -3,9 +3,8 @@
 
 #include "mongodb_helper.h"
 #include "config.h"
-#include "minhash.h"
 #include "lsh_deduplication.h"
-#include "utils/log_helper.h"
+#include "log_helper.h"
 
 #include<string>
 #include<utility>

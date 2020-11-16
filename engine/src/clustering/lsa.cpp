@@ -1,5 +1,5 @@
 #include "lsa.h"
-#include "utils/perf_clock.h"
+#include "perf_clock.h"
 #include <algorithm>
 #include <math.h>
 #include <unordered_map>

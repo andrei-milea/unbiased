@@ -2,7 +2,7 @@
 #define _VOCABULARY_H
 
 #include "stemid_tokens_rcumap.h"
-#include "utils/tokenize.h"
+#include "tokenize.h"
 #include <atomic>
 #include <string>
 #include <unordered_set>

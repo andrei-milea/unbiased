@@ -1,5 +1,6 @@
 #ifndef _PERF_CLOCK_H
 #define _PERF_CLOCK_H
+#define SPDLOG_FMT_EXTERNAL
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/daily_file_sink.h"

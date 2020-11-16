@@ -7,6 +7,9 @@
 
 using boost::property_tree::ptree;
 
+constexpr int32_t SIGNATURE_SIZE = 100;
+using Signature = std::array<int32_t, SIGNATURE_SIZE>;
+
 struct PQLCredentials
 {
     std::string host;

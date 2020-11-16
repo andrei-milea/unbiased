@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE "test_bu_clustering"
 
-#include "../vocabulary.h"
-#include "../bu_clustering.h"
-#include "../article_parser.h"
-#include "../utils/article_utils.h"
-#include "../utils/log_helper.h"
-#include "../utils/perf_clock.h"
+#include "vocabulary.h"
+#include "bu_clustering.h"
+#include "article_parser.h"
+#include "article_utils.h"
+#include "log_helper.h"
+#include "perf_clock.h"
 #include "boost/test/included/unit_test.hpp"
 
 using namespace boost::unit_test;

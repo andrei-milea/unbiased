@@ -1,8 +1,8 @@
 #define BOOST_TEST_MODULE "test_article_parser"
 
-#include "../article_parser.h"
-#include "../utils/article_utils.h"
-#include "../utils/log_helper.h"
+#include "article_parser.h"
+#include "article_utils.h"
+#include "log_helper.h"
 #include "boost/test/included/unit_test.hpp"
 
 using namespace boost::unit_test;

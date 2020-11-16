@@ -1,5 +1,5 @@
 #include "article_dedup.h"
-#include "utils/log_helper.h"
+#include "log_helper.h"
 #include "zmq_helper.h"
 #include <thread>
 #include <zmq.hpp>
