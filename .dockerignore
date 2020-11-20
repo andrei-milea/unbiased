@@ -1,7 +1,7 @@
 /data
 /docker
-/bin
 /scripts
+/engine/build/*
 /ml
 /tests
 

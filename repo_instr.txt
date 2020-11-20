@@ -1,3 +1,20 @@
+
+WEB DOCKER IMAGE
+The django docker container requires a postgresql setup on the local system.  The db needs to be already running and a table 'unbiased' created before running the container.
+To build the image run from the base of the repo:
+    docker build -t web -f docker/Dockerfile.django .
+The django container runs from the base of the repo with:
+    docker run -p 8000:8000 -t web
+
+BUILD/DEV DOCKER IMAGE
+The engine (cpp) build container can be run with:
+    docker build -t bld -f docker/Dockerfile.build .
+    run -ti engdev
+Then the dev image(that only bring code differences to the build one) can be run with:
+    docker build -t engdev -f docker/Dockerfile.engdev .
+    docker run -ti engdev
+
+
 -----Postgresql commands:
 systemctl stop postgresql.service
 systemctl stop postgresql.service

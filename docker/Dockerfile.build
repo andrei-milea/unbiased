@@ -1,0 +1,33 @@
+FROM archlinux
+
+RUN pacman -Syu --noconfirm
+
+USER root
+
+RUN pacman -S git --noconfirm
+RUN pacman -S sudo --noconfirm
+RUN pacman -S python --noconfirm
+RUN pacman -S gcc --noconfirm
+RUN pacman -S make --noconfirm
+RUN pacman -S cmake --noconfirm
+RUN pacman -S pkgconfig --noconfirm
+RUN pacman -S doxygen --noconfirm
+RUN pacman -S zeromq --noconfirm
+RUN pacman -S boost --noconfirm
+RUN pacman -S spdlog --noconfirm
+RUN pacman -S fmt --noconfirm
+RUN pacman -S libmongoc --noconfirm
+RUN pacman -S icu --noconfirm
+run pacman -S curl --noconfirm
+run pacman -S lapack --noconfirm
+
+WORKDIR /unbiased
+COPY . .
+
+#compile external projects
+RUN rm -fr engine/extern/mongocxx/build && mkdir engine/extern/mongocxx/build && cd engine/extern/mongocxx/build && cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr/local && sudo cmake --build . --target EP_mnmlstc_core && cmake --build . && cmake --build . && sudo cmake --build . --target install
+
+RUN rm -fr engine/build
+RUN mkdir engine/build
+RUN cd engine/build && cmake .. && make
+

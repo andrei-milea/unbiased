@@ -57,7 +57,7 @@ find_library(ZeroMQ_LIBRARY
 
 pkg_check_modules(CURL libcurl REQUIRED)
 
-add_subdirectory(extern/dlib)
+add_subdirectory(extern/dlib dlib_build)
 
 add_subdirectory(extern/porter2_stemmer)
 

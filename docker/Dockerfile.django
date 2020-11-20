@@ -24,7 +24,7 @@ RUN pip install psycopg2 && \
 
 WORKDIR /web_backend
 
-COPY web/backend .
+COPY web .
 
 EXPOSE 8000
 RUN python manage.py makemigrations backend
