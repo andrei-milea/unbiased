@@ -18,26 +18,33 @@ public:
     Vocabulary(Vocabulary&& vocab) = delete;
     Vocabulary& operator=(const Vocabulary& vocab) = delete;
 
+    //keeps track of how many articles a stems shows up in
+    //thread safe - atomic
     void increase_stem_freq(StemId stem_id) const noexcept
     {
         assert(stem_id < stems_freq_.size());
         stems_freq_[stem_id].fetch_add(1, std::memory_order_relaxed);
+        if (stems_freq_[stem_id] > 3)
+            freq_stems_no_++;
     }
 
-    //thread safe - atomic
-    void increase_stems_freq(const std::set<StemId>& stems_ids) const noexcept
-    {
-        for (StemId stem_id : stems_ids)
-        {
-            assert(stem_id < stems_freq_.size());
-            stems_freq_[stem_id].fetch_add(1, std::memory_order_relaxed);
-        }
-    }
-
+    //returns the number of articles a stem shows up in
     int32_t get_stem_freq(StemId stem_id) const
     {
         assert(stem_id < stems_freq_.size());
         return stems_freq_[stem_id];
+    }
+
+    std::vector<uint64_t> get_stems_freq() const
+    {
+        std::vector<uint64_t> res(stems_freq_.begin(), stems_freq_.end());
+        return res;
+    }
+
+    //returns the number of stems that show up in more than 3 articles
+    size_t get_freq_stems_no()const noexcept
+    {
+        return freq_stems_no_;
     }
 
     bool get_stem(StemId idx, std::string& stem) const noexcept
@@ -89,12 +96,6 @@ public:
         return stop_words_;
     }
 
-    std::vector<uint64_t> get_stems_freq() const
-    {
-        std::vector<uint64_t> res(stems_freq_.begin(), stems_freq_.end());
-        return res;
-    }
-
     void add_stems(std::set<std::string>&& stems)
     {
         stems_.merge(stems);
@@ -105,6 +106,7 @@ public:
         stemid_tokens_map_.add_token(stem_id, token);
     }
 
+    //return all tokens corresponding to a stem id
     std::shared_ptr<TokensSet> get_tokens(StemId id) const
     {
         return stemid_tokens_map_.get_tokens(id);
@@ -125,6 +127,7 @@ private:
     std::unordered_set<std::string> words_;
     std::unordered_set<std::string> stop_words_;
     mutable std::array<std::atomic<int32_t>, MAX_STEMS_NO> stems_freq_;
+    mutable int32_t freq_stems_no_ = 0;
     mutable StemIdTokensRCUMap stemid_tokens_map_;
 };
 

@@ -60,4 +60,5 @@ BOOST_AUTO_TEST_CASE(test_lsa_svd)
     //lsa_processor.print_sigma();
     //cout << "\n\n\n";
     //lsa_processor.print_top_concepts(articles, 0.12);
+    lsa_processor.get_top_concepts(processed_articles, 10, 5);
 }

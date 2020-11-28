@@ -1,6 +1,6 @@
 #include "article_dedup.h"
 #include "log_helper.h"
-#include "zmq_helper.h"
+#include "dedup_rpc_stub.h"
 #include <thread>
 #include <zmq.hpp>
 
@@ -15,7 +15,7 @@ int main()
         zmq::context_t context(1);
         zmq::socket_t zmq_frontend(context, ZMQ_ROUTER);
         //communicate externally with clients
-        zmq_frontend.bind("ipc://server.ipc");
+        zmq_frontend.bind("ipc://dedup_server.ipc");
         while (true)
         {
             std::string identity = s_recv(zmq_frontend);
@@ -25,6 +25,7 @@ int main()
             auto id_sign = deserialize_id_sign(id_sign_str);
 
             bool res = article_dedup.is_duplicate(id_sign);
+            //spdlog::info("article_dedup result: {}", res);
             string res_str{ res ? "DUP" : "OK" };
 
             s_sendmore(zmq_frontend, identity);

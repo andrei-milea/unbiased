@@ -2,12 +2,12 @@
 #include <pybind11/stl.h>
 #include <boost/locale.hpp>
 
-#include "../config.h"
-#include "../lsa.h"
-#include "../vocabulary.h"
-#include "../article_parser.h"
-#include "../utils/article_utils.h"
-#include "../utils/perf_clock.h"
+#include "config.h"
+#include "lsa.h"
+#include "vocabulary.h"
+#include "article_parser.h"
+#include "article_utils.h"
+#include "perf_clock.h"
 
 const string words_filename{"words.dat"};
 const string stopwords_filename{"stop_words.dat"};
@@ -136,7 +136,8 @@ std::vector<set<string>> compute_topics(int64_t concepts_no, int64_t terms_no)
 
         LSA lsa_processor { vocab };
         lsa_processor.run_svd(processed_articles);
-        lsa_processor.print_sigma();
+        //lsa_processor.print_term_doc_matrix();
+        //lsa_processor.print_sigma();
         log_runtime.log("runnig svd");
 
         res = lsa_processor.get_top_concepts(processed_articles, concepts_no, terms_no);

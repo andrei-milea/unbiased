@@ -51,7 +51,10 @@ bool ArticleParser::tokenize_validate(Article& article, std::set<std::string>& v
             valid_stems.insert(stem);
         }
         else if (!vocabulary_.is_stop_word(token) && token.size() > 1)
+        {
             unknown_tokens_no++;
+            spdlog::info("invalid token {}", token);
+        }
     }
     return float(unknown_tokens_no + 1.0) / article.tokens.size() <= invalid_tokens_threshold;
 }

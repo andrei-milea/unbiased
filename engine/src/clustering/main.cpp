@@ -14,7 +14,6 @@ int main()
     {
         spdlog::set_default_logger(std::make_shared<spdlog::logger>("runtime_logger", std::make_shared<spdlog::sinks::daily_file_sink_mt>("clustering.log", 23, 59)));
         Pipeline pipeline{Config::get().scrapper_buff_size};
-        pipeline.process_batch("articles.xml");
         pipeline.start_processing_queue(3);
 
         zmq::socket_t receiver{Pipeline::zmq_context_, ZMQ_PULL};

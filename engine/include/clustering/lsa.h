@@ -85,8 +85,13 @@ private:
 
 private:
     const Vocabulary& vocabulary_;
+
+    //index of an element in this vector corresponds to a stem id in the vocabulary
     std::vector<size_t> terms_mat_to_vocab_;
+
     dlib::matrix<double> term_doc_mat_;
+    
+    //the following matrices contain the SVD of the terms x docs matrix
     dlib::matrix<double> U_;
     dlib::matrix<double> sigma_;
     dlib::matrix<double> V_;

@@ -6,6 +6,7 @@ project(unbiased VERSION 1.0
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_BINARY_DIR}/debug)
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_BINARY_DIR}/release)
@@ -31,6 +32,8 @@ find_package(fmt REQUIRED)
 find_package(bsoncxx REQUIRED)
 
 find_package(mongocxx REQUIRED)
+
+find_package(pybind11 REQUIRED)
 
 #find_package(icu REQUIRED)
 
@@ -66,6 +69,8 @@ add_subdirectory(src/dedup)
 add_subdirectory(src/clustering)
 
 add_subdirectory(unit_tests)
+
+add_subdirectory(pybind)
 
 #[[
 FOR DEBUGGING

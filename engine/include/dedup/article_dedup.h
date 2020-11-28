@@ -20,9 +20,9 @@ public:
     bool is_duplicate(const std::pair<std::string, Signature> &id_sign)
     {
         auto duplicates = lsh_deduplication_.process_signature(id_sign);
-        if (!duplicates.empty())
+        if (duplicates.size() > 1)
         {
-            std::string src_id = find_source(duplicates);
+            std::string src_id;// = find_source(duplicates);
             spdlog::info("found article duplicate for {}: {}", id_sign.first, src_id);
             //TODO store this info in db
             return true;

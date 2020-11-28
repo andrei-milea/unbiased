@@ -22,7 +22,7 @@ vector<pair<string, string>> load_articles_dates(MongoDb& mongodb_inst, const ve
     bson_doc_bld filter_doc;
     filter_doc << "$or" << open_array << [&articles_ids](array_context<> arr) {
         for (const auto& article_id : articles_ids)
-            arr << open_document << "id" << article_id << close_document;
+            arr << open_document << "_id" << article_id << close_document;
     } << close_array;
 
     vector<string> fields({ "_id", "date" });

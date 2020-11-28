@@ -6,7 +6,6 @@
 #include "vocabulary.h"
 #include "mongodb_helper.h"
 #include "bu_clustering.h"
-//#include "article_dedup.h"
 #include <zmq.hpp>
 #include <boost/asio.hpp>
 #include <boost/process.hpp>
@@ -22,11 +21,6 @@ public:
     {
         stop_processing_queue();
     }
-
-    //compute term-doc matrix and clusters to initialize the pipeline for further processing
-    //void process_batch(const std::vector<Article> &articles);
-    void process_batch(const std::string& filename_path);
-
 
     //start asio service and processing threads
     void start_processing_queue(uint32_t threads_no);
@@ -53,7 +47,6 @@ private:
     ArticleParser article_parser_;
     MinHash minhash_;
     std::unique_ptr<Clustering> clustering_processor_;
-    mutable zmq::socket_t zmq_client_sock_;
 
     //mongodb dastase access point - one connection per thread
     static thread_local MongoDb mongodb_inst_;

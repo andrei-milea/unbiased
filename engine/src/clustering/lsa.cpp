@@ -11,24 +11,34 @@ void LSA::build_term_doc_matrix(const std::vector<ProcessedArticle>& articles, i
 {
     assert(articles.size() > 0);
     articles_no_ = double(articles.size());
-    init_term_doc_matrix(vocabulary_.stems_no(), articles.size());
+
+    //only allow terms that show up in multiple articles and not in too many
+    for (size_t stem_id = 0; stem_id <= vocabulary_.stems_no(); stem_id++)
+    {
+        auto stem_freq = vocabulary_.get_stem_freq(stem_id);
+        if (stem_freq > tf_thresold && stem_freq < 50)
+            terms_mat_to_vocab_.push_back(stem_id);
+    }
+
+    init_term_doc_matrix(terms_mat_to_vocab_.size(), articles.size());
 
     spdlog::info("building term_doc_matrix {} x {}", vocabulary_.stems_no(), articles.size());
     for (size_t cidx = 0; cidx < articles.size(); cidx++)
     {
         // compute term frequency
-        std::vector<int32_t> tf(vocabulary_.stems_no(), 0);
+        std::vector<int32_t> terms_freq(vocabulary_.stems_no(), 0);
         for (StemId stem : articles[cidx].stem_ids)
         {
             assert(stem <= vocabulary_.stems_no());
-            tf[stem]++;
+            terms_freq[stem]++;
         }
 
-        for (size_t ridx = 0; ridx < vocabulary_.stems_no(); ridx++)
+        for (size_t ridx = 0; ridx < terms_mat_to_vocab_.size(); ridx++)
         {
             assert(articles[cidx].tokens_no != 0);
-            if (tf[ridx] > tf_thresold)
-                term_doc_mat_(ridx, cidx) = tf[ridx] / articles[cidx].tokens_no;
+            auto tf = terms_freq[terms_mat_to_vocab_[ridx]];
+            if (tf > 0)
+                term_doc_mat_(ridx, cidx) = double(tf) / double(articles[cidx].tokens_no);
             //* log(articles_no_ / vocabulary_.get_stem_freq(ridx));
             assert(!isnan(term_doc_mat_(ridx, cidx)));
         }
@@ -37,18 +47,16 @@ void LSA::build_term_doc_matrix(const std::vector<ProcessedArticle>& articles, i
 
 void LSA::print_term_doc_matrix() const
 {
-    cout << "term_doc_mat size: " << term_doc_mat_.nr() << " " << term_doc_mat_.nc() << "\n";
+    spdlog::info("term_doc_mat sz: {}-{}", term_doc_mat_.nr(), term_doc_mat_.nc());
     for (auto row = 0; row < term_doc_mat_.nr(); row++)
     {
         for (auto col = 0; col < term_doc_mat_.nc(); col++)
-            cout << term_doc_mat_(row, col) << " ";
-        cout << "\n";
+            spdlog::info("{} ", term_doc_mat_(row, col));
     }
 }
 
 void LSA::print_sigma() const
 {
-    cout << "sigma size: " << sigma_.nr() << " " << sigma_.nc() << "\n";
     spdlog::info("LSA::print_sigma {} x {}", sigma_.nr(), sigma_.nc());
     for (auto row = 0; row < sigma_.nr(); row++)
     {
@@ -159,7 +167,7 @@ std::vector<std::set<string>> LSA::get_top_concepts(const std::vector<ProcessedA
 
         for (long row = 0; row < U_.nr(); row++)
         {
-            auto tokens_set = vocabulary_.get_tokens(row);
+            auto tokens_set = vocabulary_.get_tokens(terms_mat_to_vocab_[row]);
             assert(tokens_set && !tokens_set->empty());
             string term = *(tokens_set->begin());
             concept_terms_vals.push_back(make_pair(term, U_(row, col)));
